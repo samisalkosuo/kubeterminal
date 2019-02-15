@@ -1,0 +1,300 @@
+import datetime
+
+from prompt_toolkit import Application
+from prompt_toolkit.buffer import Buffer
+from prompt_toolkit.layout.containers import HSplit,VSplit, Window
+from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
+from prompt_toolkit.layout.layout import Layout
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.application import get_app
+from prompt_toolkit.widgets import SystemToolbar
+from prompt_toolkit.widgets import Frame, RadioList, VerticalLine, HorizontalLine, TextArea
+from prompt_toolkit.key_binding.bindings.focus import focus_next, focus_previous
+from prompt_toolkit.keys import Keys
+from prompt_toolkit import eventloop
+from prompt_toolkit.shortcuts import yes_no_dialog
+
+from kubectl import namespaces,pods,nodes
+from application import state,lexer
+
+#TODO: add terminal: https://github.com/prompt-toolkit/ptterm
+
+applicationState = state.State()
+
+enableMouseSupport = False
+enableScrollbar = False
+
+def updateState():
+    
+    selected_namespace=namespaceWindow.current_value
+    selected_node=nodeListArea.current_value
+    selected_pod=str(podListArea.buffer.document.current_line).strip()
+
+    if applicationState.selected_pod != selected_pod:
+        #somethingSelected=applicationState.selected_pod
+        applicationState.selected_pod = selected_pod
+        #f somethingSelected != "":
+        #    updateUI("selectedpod")
+
+    if applicationState.current_namespace != selected_namespace:
+        applicationState.current_namespace = selected_namespace
+        updateUI("namespacepods")
+
+    if applicationState.selected_node != selected_node:
+        applicationState.selected_node = selected_node
+        updateUI("nodepods")
+
+def updateUI(updateArea):
+    if updateArea == "selectedpod":
+        appendToOutput(applicationState.selected_pod)
+
+    if updateArea == "nodepods":
+        #TODO: all pods in selected node and namespace
+        podsList=pods.list(applicationState.current_namespace,applicationState.selected_node)
+        title="Pods (%s)" % applicationState.selected_node
+        updatePodListArea(podsList, title)
+
+    if updateArea == "namespacepods":
+        podsList=pods.list(applicationState.current_namespace,applicationState.selected_node)
+        podListArea.text=podsList
+        podListAreaFrame.title="Pods (%s)" % applicationState.current_namespace
+        if 1 == 2:
+            podsString=[]
+            for pod in podsList:
+                podsString.append(pod["name"])
+            podListArea.text = "\n".join(podsString)
+        
+def updatePodListArea(podListString, title):
+
+    #prettify pods list
+
+    podListArea.text=podListString
+    podListAreaFrame.title=title
+
+
+kb = KeyBindings()
+# Global key bindings.
+
+
+@kb.add('tab')
+def tab_(event):
+    updateState()
+    #refresh UI
+    focus_next(event)
+
+@kb.add('s-tab')
+def stab_(event):
+    updateState()
+    #refresh UI
+    focus_previous(event)
+
+@kb.add('escape')
+def exit_(event):
+    """
+    Pressing Esc will exit the user interface.
+
+    Setting a return value means: quit the event loop that drives the user
+    interface and return this value from the `CommandLineInterface.run()` call.
+    """
+    event.app.exit()
+
+@kb.add('c-h')
+def help_(event):
+    executeCommand("help")
+
+@kb.add('c-d')
+def describepod_(event):
+    applicationState.selected_pod=str(podListArea.buffer.document.current_line).strip()
+    executeCommand("describe")
+
+@kb.add('c-l')
+def logspod_(event):
+    applicationState.selected_pod=str(podListArea.buffer.document.current_line).strip()
+    executeCommand("logs")
+
+@kb.add('c-r')
+def logspod_(event):
+    #refresh pods
+    updateState()
+    updateUI("namespacepods")
+
+#content windows
+namespaceWindow = RadioList(namespaces.list())
+namespaceWindowFrame= Frame(namespaceWindow,title="Namespaces",height=8,width=27)
+
+# nodeListArea = TextArea(text=nodes.list(), 
+#                 multiline=True,
+#                 wrap_lines=False,
+#                 scrollbar=True,
+#                 #lexer=lexer.PodStatusLexer(),
+#  #               accept_handler=podAreaAcceptHandler,
+#                 read_only=False
+                
+#                 )
+nodeListArea = RadioList(nodes.list())
+
+nodeWindowFrame= Frame(nodeListArea,title="Nodes",height=8,width=53)
+
+upper_left_container = VSplit([namespaceWindowFrame, 
+                #HorizontalLine(),
+                #Window(height=1, char='-'),
+                nodeWindowFrame])
+
+#def podAreaAcceptHandler(buffer):
+#    outputArea.text=buffer.text
+    
+#pods window
+podListArea = TextArea(text="", 
+                multiline=True,
+                wrap_lines=False,
+                scrollbar=enableScrollbar,
+                lexer=lexer.PodStatusLexer(),
+ #               accept_handler=podAreaAcceptHandler,
+                read_only=True
+                
+                )
+podListAreaFrame= Frame(podListArea,title="Pods",width=80)
+#TODO: somehow add on_cursor_position_changed event to TextArea
+
+
+left_container = HSplit([upper_left_container, 
+                #HorizontalLine(),
+                #Window(height=1, char='-'),
+                podListAreaFrame])
+
+#print(namespaceWindow.current_value)
+#output area to output debug etc stuff
+outputArea = TextArea(text="", 
+                    multiline=True,
+                    wrap_lines=False,
+                    lexer=lexer.OutputAreaLexer(),
+                    scrollbar=enableScrollbar,
+                    read_only=True)
+outputAreaFrame= Frame(outputArea,title="Output")
+
+content_container = VSplit([
+    # One window that holds the BufferControl with the default buffer on
+    # the left.
+    left_container,
+    # A vertical line in the middle. We explicitly specify the width, to
+    # make sure that the layout engine will not try to divide the whole
+    # width by three for all these windows. The window will simply fill its
+    # content by repeating this character.
+    #VerticalLine(),
+    #Window(width=1, char='|')
+    
+    # Display the text 'Hello world' on the right.
+    #Window(content=FormattedTextControl(text='Hello world, Escape to Quit'))
+    outputAreaFrame
+
+])
+
+def appendToOutput(text,cmd="",overwrite=False):
+    if "No resources found" in text:
+        return
+
+    now = datetime.datetime.utcnow().isoformat()
+    if cmd == "":
+        header = "=== %s ===" % now
+    else:
+        header = "=== %s - %s ===" % (now,cmd)
+    
+    if outputArea.text == "":        
+        outputArea.text="\n".join([header,text,""])
+    else:
+        outputArea.text="\n".join([outputArea.text,header,text,""])
+    
+#    outputArea.buffer.cursor_position=len(outputArea.text)
+    outputIndex=outputArea.text.find(header)
+    outputArea.buffer.cursor_position=outputIndex#len(outputArea.text)
+    outputArea.buffer.cursor_down(30)
+
+
+#command handler for shell
+def commandHander(buffer):
+    #check incoming command
+    cmd = buffer.text
+    executeCommand(cmd)
+
+#actual command handler, can be called from other sources as well
+def executeCommand(cmd):
+    text=""
+    if cmd == "":
+        return
+
+    if cmd == "help":
+        text="""KubeTerminal
+
+Helper tool for Kubernetes.
+
+This output window shows output of commands.
+"Selected pod" is the pod where cursor is in the Pods window.
+
+Key bindings
+
+- ESC - exit program.
+- <ctrl-l>, show logs of currently selected pod (without any options).
+- <ctrl-d>, show description of currently selected pod (without any options).
+- <ctrl-r>, refresh pod list.
+
+Commands:
+
+- help - this help.
+- logs <options> - show logs of currently selected pod.
+- describe <describe options> - show description of currently selected pod.
+
+"""
+    def getPodNameAndNamespaceName():
+        podLine = applicationState.selected_pod
+        namespace=""
+        podName=""
+        if podLine != "":
+            fields=podLine.split()
+            if applicationState.current_namespace == "all-namespaces":
+                podName=fields[1]
+                namespace=fields[0]
+            else:
+                podName=fields[0]
+                namespace=applicationState.current_namespace
+        return (namespace,podName)
+
+    if cmd.find("logs") == 0:
+        (namespace,podName)=getPodNameAndNamespaceName()
+        if namespace!="" and podName != "":
+            options=cmd.replace("logs","")
+            cmd = "logs " + podName
+            text=pods.logs(podName,namespace,options)
+
+    if cmd.find("describe") == 0:
+        (namespace,podName)=getPodNameAndNamespaceName()
+        if namespace!="" and podName != "":
+            options=cmd.replace("describe","")
+            cmd = "describe " + podName
+            text=pods.describe(podName,namespace,options) 
+
+    if text != "":
+        appendToOutput(text,cmd=cmd)
+        #appendToOutput("\n".join([outputArea.text,text]),cmd=cmd)
+        #outputArea.text="\n".join([outputArea.text,text])
+    
+def commandPrompt(line_number, wrap_count):
+    return "command>"
+
+command_container = TextArea(text="", multiline=False,accept_handler=commandHander,get_line_prefix=commandPrompt)
+commandWindowFrame= Frame(command_container,title="KubeTerminal (Ctrl-d to describe pod, Ctrl-l to show logs, Esc to exit, Tab to switch focus and refresh UI, 'help' for help)",height=4)
+
+
+root_container = HSplit([content_container, 
+     #           HorizontalLine(),
+                #Window(height=1, char='-'),
+                commandWindowFrame])
+
+layout = Layout(root_container)
+
+app = Application(layout=layout,
+                key_bindings=kb,
+                full_screen=True,
+                mouse_support=enableMouseSupport
+                )
+
+app.run()
