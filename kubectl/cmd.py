@@ -6,8 +6,7 @@ def executeCmd(cmd):
     #TODO: if output is very long, this will hang until it is done
     output = ""
     try:
-        #output = check_output(cmd,shell=True,stderr=subprocess.STDOUT,timeout=30)
-        output = check_output(cmd,stderr=subprocess.STDOUT,timeout=30)
+        output = check_output(cmd,shell=True,stderr=subprocess.STDOUT,timeout=30)
         output = output.decode('utf-8')
     except subprocess.CalledProcessError as E:
         output = E.output.decode('utf-8')
