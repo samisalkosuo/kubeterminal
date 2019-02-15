@@ -31,7 +31,7 @@ Features include (and more planned):
   - tab: switch windows and refresh pod list
   - use tab to go to Pods-window and:
     - line up/down to select pod 
-    - describe pod: &lt;ctrl-r>
+    - describe pod: &lt;ctrl-d>
     - show logs: &lt;ctrl-l>
 
 ## TODO
