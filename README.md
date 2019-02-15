@@ -2,7 +2,7 @@
 
 KubeTerminal is helper tool for Kubernetes.
 
-The idea is to provide a tool that provides simple and quick tool to get the basics out of Kubernetes environment.
+The idea is provide a simple and quick tool to get the basics out of Kubernetes environment to complement existing kubectl and shell.
 
 Features include (and more planned):
 
@@ -10,21 +10,52 @@ Features include (and more planned):
 - List pods in namespace and/or node.
 - See pod logs.
 - Describe pods.
-- Colors.
+- Colors, if terminal supports them.
 
-## Installation
+## Installation and usage
+
+- Python 3.
+  - Python 3.7.2 used for development.
+  - Windows or Linux. 
+    - [cmder console](http://cmder.net/) used in Windows 10.
+- Clone/download this repo.
+- Install prompt-toolkit:
+  - ```pip3 install prompt-toolkit```
+- Install and configure kubectl.
+- Login to Kubernetes cluster before using KubeTerminal.
+- Start KubeTerminal:
+  - ```python3.7 kubeterminalpy```
+- Basic commands:
+  - help: &lt;ctrl-h>
+  - refresh pod list: &lt;ctrl-r>  
+  - tab: switch windows and refresh pod list
+  - use tab to go to Pods-window and:
+    - line up/down to select pod 
+    - describe pod: &lt;ctrl-r>
+    - show logs: &lt;ctrl-l>
 
 ## TODO
 
-- refactor code
-- make binary package that includes Python 3 runtime (for offline installations).
-- add shell capability
-- add Helm commands
-- make customizable window layout
-- add Kube services
-- refactor code
+- Refactor code.
+- Make binary package that includes Python 3 runtime (for offline installations).
+- Add shell capability.
+- Add Helm commands.
+- Make customizable window layout.
+- Add Kube services and ingress.
+- Add Kube storage.
+- Installation using pip.
+- Refactor code.
 
 ## Screenshots
+
+![KubeTerminal 01](images/kubeterminal_01.png)
+
+![KubeTerminal 02](images/kubeterminal_02.png)
+
+![KubeTerminal 03](images/kubeterminal_03.png)
+
+![KubeTerminal 04](images/kubeterminal_04.png)
+
 
 ## Background
 
@@ -34,11 +65,13 @@ I'm working with Kubernetes quite a lot and I found that there a few basic comma
 - ```kubectl logs <pod name>```
 - ```kubectl describe pod <pod name>```
 
-Writing these commands take time, and when in hurry, that time is noticeable :-) 
+Writing these commands take time, and when in hurry, that time is noticeable. 
 
 I accidentally found [Kubebox](https://github.com/astefanutti/kubebox) and immediately tried it. 
 But authentication failed when using IBM Cloud Private and self-signed certificate.
 
 BTW, [IBM Cloud Private](https://www.ibm.com/cloud/private) is the main Kubernetes environment that I'm using ([there's free Community Edition available at Docker Hub](https://hub.docker.com/r/ibmcom/icp-inception/), you should try it :-).
 
-Kubebox idea haunted until I remembered the existence of [Python Prompt Toolkit](https://github.com/prompt-toolkit/python-prompt-toolkit) and rememberd that it can be used to create full-screen terminal application. Then I decided to make my own Kubebox, that I named KubeTerminal.
+Kubebox idea haunted until I remembered the existence of [Python Prompt Toolkit](https://github.com/prompt-toolkit/python-prompt-toolkit) and remembered that it can be used to create full-screen terminal application. 
+
+I decided to make my own Kubebox, and I named it KubeTerminal :-)
