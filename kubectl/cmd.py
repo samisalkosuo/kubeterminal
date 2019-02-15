@@ -32,6 +32,11 @@ def getNodes():
     output = executeCmd(cmd+" --no-headers")
     return output
 
+def describeNode(nodeName):
+    cmd="kubectl describe node \"%s\" " % nodeName
+    output = executeCmd(cmd)
+    return output
+
 def getPods(namespace):
     cmd="kubectl get pods "
     if namespace == "all-namespaces":

@@ -1,5 +1,16 @@
+from .cmd import getNodes, describeNode
 
-from .cmd import getNodes
+def describe(cmdOptions, selectedNode):
+    node = ""
+    options = cmdOptions.strip()
+    if options == "":
+        node = selectedNode
+    else:
+        node = options
+    if node.find("all") > -1:
+        return "Describing all nodes not (yet) supported."
+    return describeNode(node)
+    
 
 def list():
     '''Return list of tuples of nodes: [(value,label),(value,label),...]'''

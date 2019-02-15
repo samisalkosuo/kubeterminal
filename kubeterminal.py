@@ -242,6 +242,7 @@ Commands:
 - help - this help.
 - logs <options> - show logs of currently selected pod.
 - describe <describe options> - show description of currently selected pod.
+- node <node name> - show description of given node, or currently selected node.
 
 """
     def getPodNameAndNamespaceName():
@@ -271,6 +272,15 @@ Commands:
             options=cmd.replace("describe","")
             cmd = "describe " + podName
             text=pods.describe(podName,namespace,options) 
+
+    if cmd.find("node") == 0:
+        selectedNode=applicationState.selected_node
+        options=cmd.replace("node","").strip()
+        text=nodes.describe(options,selectedNode)
+        if options == "":
+            options = selectedNode
+        cmd = "describe node %s " % options
+
 
     if text != "":
         appendToOutput(text,cmd=cmd)
