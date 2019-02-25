@@ -34,16 +34,41 @@ Features include (and more planned):
     - describe pod: &lt;ctrl-d>
     - show logs: &lt;ctrl-l>
 
+## Executable binary
+
+Executable binary is used to provide easy way to distribute KubeTerminal to servers without Internet connection.
+[PyInstaller](https://www.pyinstaller.org) can be to create the executable
+
+Binary is created on system where you want to use the binary. For Windows binary, create the binary in Windows, for Linux, create the binary in Linux, and so on.
+
+Commands create binary:
+- Install PyInstaller
+  - ```pip install pyinstaller```
+- Create single file executable:
+  - ```pyinstaller --onefile kubeterminal.py```
+- Binary file is located:
+  - ```dist/kubeterminal```
+  - if building on Windows, file has *.exe* suffix.
+
+Or, to create Linux executable:
+- Execute script:
+  - ```create_linux_exe.sh```
+- This uses Docker to create the executable and copies executable to current directory.
+- Executable name:
+  - ```kubeterminal.bin```
+
+
 ## TODO
 
 - Refactor code.
-- Make binary package that includes Python 3 runtime (for offline installations).
+- ~~Make binary package that includes Python 3 runtime (for offline installations).~~
 - Add shell capability.
 - Add Helm commands.
 - Make customizable window layout.
 - Add Kube services and ingress.
-- Add Kube storage.
+- Add Kube storage. 
 - Installation using pip.
+- Version info.
 - Refactor code.
 
 ## Screenshots
