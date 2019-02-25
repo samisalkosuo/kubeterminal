@@ -41,6 +41,20 @@ Executable binary is used to provide easy way to distribute KubeTerminal to serv
 
 Binary is created on system where you want to use the binary. For Windows binary, create the binary in Windows, for Linux, create the binary in Linux, and so on.
 
+### Docker
+
+DockerHub has image *kazhar/kubeterminal* and it includes Linux executable:
+
+Use following commands to copy the executable to local machine:
+
+```
+docker create -it --name kubeterminal kazhar/kubeterminal bash
+docker cp kubeterminal:/root/dist/kubeterminal kubeterminal.bin
+docker rm -fv kubeterminal
+```
+
+### Create binary
+
 Commands create binary:
 - Install PyInstaller
   - ```pip install pyinstaller```
