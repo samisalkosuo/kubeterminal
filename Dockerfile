@@ -1,9 +1,9 @@
 #create KubeTerminal Linux executable
 
-FROM ubuntu:18.04
+FROM ubuntu:16.04
 
 RUN apt-get update
-RUN apt-get -y upgrade
+#RUN apt-get -y upgrade
 RUN apt-get install -y build-essential libssl-dev libffi-dev python-dev
 RUN apt-get install -y python3-pip
 
