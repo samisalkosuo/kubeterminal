@@ -1,8 +1,8 @@
 # KubeTerminal
 
-KubeTerminal is helper tool for Kubernetes.
+KubeTerminal is helper tool for Kubernetes. The idea is provide a simple and quick tool to get the basics out of Kubernetes environment. 
 
-The idea is provide a simple and quick tool to get the basics out of Kubernetes environment to complement existing kubectl and shell.
+KubeTerminal is complementing, not replacing, existing kubectl and shell.
 
 Features include (and more planned):
 
@@ -10,6 +10,7 @@ Features include (and more planned):
 - List pods in namespace and/or node.
 - See pod logs.
 - Describe pods.
+- Option for single executable, for easy installation.
 - Colors, if terminal supports them.
 
 ## Installation and usage
@@ -55,7 +56,8 @@ docker rm -fv kubeterminal
 
 ### Create binary
 
-Commands create binary:
+Use the following commands create binary in the platform you are using:
+
 - Install PyInstaller
   - ```pip install pyinstaller```
 - Create single file executable:
@@ -64,10 +66,10 @@ Commands create binary:
   - ```dist/kubeterminal```
   - if building on Windows, file has *.exe* suffix.
 
-Or, to create Linux executable:
+Or, to create Linux executable using Docker:
 - Execute script:
   - ```create_linux_exe.sh```
-- This uses Docker to create the executable and copies executable to current directory.
+- The executable is copied current directory.
 - Executable name:
   - ```kubeterminal.bin```
 
