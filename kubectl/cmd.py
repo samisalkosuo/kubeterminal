@@ -1,5 +1,7 @@
 from subprocess import check_output
 import subprocess
+import threading
+
 
 #execute kubectl commands
 def executeCmd(cmd):
@@ -14,6 +16,43 @@ def executeCmd(cmd):
         output = E.output.decode('utf-8')
         output = "TIMEOUT when executing %s\n\n%s" % (cmd, output)
     return output
+
+def executeBackgroudCmd(cmd):
+    '''Execute command in background thread. Does not print output.'''
+
+    class BackgroundProcess(object):
+        """ Background process  class
+        The run() method will be started and it will run in the background
+        """
+
+        def __init__(self, cmd):
+            self.cmd = cmd
+
+            thread = threading.Thread(target=self.run, args=())
+            thread.daemon = True                            # Daemonize thread
+            thread.start()                                  # Start the execution
+
+        def run(self):
+            output = ""
+            try:
+                output = check_output(self.cmd,shell=True,stderr=subprocess.STDOUT,timeout=30)
+                output = output.decode('utf-8')
+            except subprocess.CalledProcessError as E:
+                output = E.output.decode('utf-8')
+            except subprocess.TimeoutExpired as E:
+                output = E.output.decode('utf-8')
+                output = "TIMEOUT when executing %s\n\n%s" % (cmd, output)
+
+    BackgroundProcess(cmd)
+    return "Delete pod started in background. Refresh pod list to see status."       
+    
+
+def deletePod(podName,namespace):
+    cmd="kubectl delete pod " + podName
+    cmd=cmd +" -n "+namespace
+    output = executeBackgroudCmd(cmd)
+    return output
+
 
 def describePod(podName,namespace,options):
     cmd="kubectl describe pod " + podName

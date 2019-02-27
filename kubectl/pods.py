@@ -1,5 +1,8 @@
 
-from .cmd import getNamespaces,getPods,describePod,logsPod
+from .cmd import getNamespaces,getPods,describePod,logsPod,deletePod
+
+def delete(podName,namespaceName):
+    return deletePod(podName,namespaceName)
 
 def describe(podName,namespaceName,options):
     return describePod(podName,namespaceName,options)

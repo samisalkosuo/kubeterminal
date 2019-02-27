@@ -218,6 +218,7 @@ def commandHander(buffer):
 
 #actual command handler, can be called from other sources as well
 def executeCommand(cmd):
+    refreshUIAfterCmd = False
     text=""
     if cmd == "":
         return
@@ -241,6 +242,7 @@ Commands:
 
 - help - this help.
 - logs <options> - show logs of currently selected pod.
+- delete - delete currently selected pod.
 - describe <describe options> - show description of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.
 
@@ -281,11 +283,20 @@ Commands:
             options = selectedNode
         cmd = "describe node %s " % options
 
+    if cmd.find("delete") == 0:
+        (namespace,podName)=getPodNameAndNamespaceName()
+        text=pods.delete(podName,namespace)
+        cmd = "delete pod %s" % podName
+        refreshUIAfterCmd = True
 
     if text != "":
         appendToOutput(text,cmd=cmd)
         #appendToOutput("\n".join([outputArea.text,text]),cmd=cmd)
         #outputArea.text="\n".join([outputArea.text,text])
+    
+    if refreshUIAfterCmd == True:
+        updateUI("namespacepods")
+        
     
 def commandPrompt(line_number, wrap_count):
     return "command>"
