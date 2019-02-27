@@ -13,11 +13,13 @@ from prompt_toolkit.key_binding.bindings.focus import focus_next, focus_previous
 from prompt_toolkit.keys import Keys
 from prompt_toolkit import eventloop
 from prompt_toolkit.shortcuts import yes_no_dialog
+#from ptterm import Terminal
 
 from kubectl import namespaces,pods,nodes
 from application import state,lexer
 
 #TODO: add terminal: https://github.com/prompt-toolkit/ptterm
+#For windows requires Python 3.6
 
 applicationState = state.State()
 
@@ -97,10 +99,6 @@ def exit_(event):
     interface and return this value from the `CommandLineInterface.run()` call.
     """
     event.app.exit()
-
-@kb.add('c-h')
-def help_(event):
-    executeCommand("help")
 
 @kb.add('c-d')
 def describepod_(event):
