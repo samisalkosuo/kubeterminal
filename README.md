@@ -76,6 +76,8 @@ Or, to create Linux executable using Docker:
 
 ## TODO
 
+Some, but not all, things to do:
+
 - Refactor code.
 - ~~Make binary package that includes Python 3 runtime (for offline installations).~~
 - Add shell capability.
