@@ -237,10 +237,11 @@ Key bindings
 Commands:
 
 - help - this help.
-- logs <options> - show logs of currently selected pod.
 - delete - delete currently selected pod.
 - describe <describe options> - show description of currently selected pod.
+- logs <options> - show logs of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.
+- shell <any shell command> - executes any shell command.
 
 """
     def getPodNameAndNamespaceName():
