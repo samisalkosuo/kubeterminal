@@ -19,7 +19,7 @@ def executeCmd(cmd):
 
 def executeBackgroudCmd(cmd):
     '''Execute command in background thread. Does not print output.'''
-
+    #Thanks go to: http://sebastiandahlgren.se/2014/06/27/running-a-method-as-a-background-thread-in-python/
     class BackgroundProcess(object):
         """ Background process  class
         The run() method will be started and it will run in the background
