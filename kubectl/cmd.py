@@ -1,7 +1,7 @@
 from subprocess import check_output
 import subprocess
 import threading
-
+import locale
 
 #execute kubectl commands
 def executeCmd(cmd):
@@ -15,6 +15,12 @@ def executeCmd(cmd):
     except subprocess.TimeoutExpired as E:
         output = E.output.decode('utf-8')
         output = "TIMEOUT when executing %s\n\n%s" % (cmd, output)
+    except:
+        #catch all exception including decoding errors
+        #assume decoding error
+        system_encoding = locale.getpreferredencoding()
+        output = output.decode(system_encoding)
+        
     return output
 
 def executeBackgroudCmd(cmd):
