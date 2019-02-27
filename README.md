@@ -16,7 +16,7 @@ Features include (and more planned):
 ## Installation and usage
 
 - Python 3.
-  - Python 3.7.2 used for development.
+  - Python 3.7.2 and 3.6.8 used for development.
   - Windows or Linux. 
     - [cmder console](http://cmder.net/) used in Windows 10.
 - Clone/download this repo.

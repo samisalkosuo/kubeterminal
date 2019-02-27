@@ -13,13 +13,10 @@ from prompt_toolkit.key_binding.bindings.focus import focus_next, focus_previous
 from prompt_toolkit.keys import Keys
 from prompt_toolkit import eventloop
 from prompt_toolkit.shortcuts import yes_no_dialog
-#from ptterm import Terminal
 
 from kubectl import namespaces,pods,nodes
 from application import state,lexer
 
-#TODO: add terminal: https://github.com/prompt-toolkit/ptterm
-#For windows requires Python 3.6
 
 applicationState = state.State()
 
