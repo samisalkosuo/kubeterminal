@@ -16,7 +16,7 @@ from prompt_toolkit.shortcuts import yes_no_dialog
 
 from kubectl import namespaces,pods,nodes
 from application import state,lexer
-
+from kubectl import cmd 
 
 applicationState = state.State()
 
@@ -184,15 +184,16 @@ content_container = VSplit([
 
 ])
 
-def appendToOutput(text,cmd="",overwrite=False):
-    if "No resources found" in text:
+def appendToOutput(text,cmdString="",overwrite=False):
+
+    if text is None or "No resources found" in text:    
         return
 
     now = datetime.datetime.utcnow().isoformat()
-    if cmd == "":
+    if cmdString == "":
         header = "=== %s ===" % now
     else:
-        header = "=== %s - %s ===" % (now,cmd)
+        header = "=== %s - %s ===" % (now,cmdString)
     
     if outputArea.text == "":        
         outputArea.text="\n".join([header,text,""])
@@ -208,17 +209,17 @@ def appendToOutput(text,cmd="",overwrite=False):
 #command handler for shell
 def commandHander(buffer):
     #check incoming command
-    cmd = buffer.text
-    executeCommand(cmd)
+    cmdString = buffer.text
+    executeCommand(cmdString)
 
 #actual command handler, can be called from other sources as well
-def executeCommand(cmd):
+def executeCommand(cmdString):
     refreshUIAfterCmd = False
     text=""
-    if cmd == "":
+    if cmdString == "":
         return
 
-    if cmd == "help":
+    if cmdString == "help":
         text="""KubeTerminal
 
 Helper tool for Kubernetes.
@@ -256,36 +257,40 @@ Commands:
                 namespace=applicationState.current_namespace
         return (namespace,podName)
 
-    if cmd.find("logs") == 0:
+    if cmdString.find("logs") == 0:
         (namespace,podName)=getPodNameAndNamespaceName()
         if namespace!="" and podName != "":
-            options=cmd.replace("logs","")
-            cmd = "logs " + podName
+            options=cmdString.replace("logs","")
+            cmdString = "logs " + podName
             text=pods.logs(podName,namespace,options)
 
-    if cmd.find("describe") == 0:
+    if cmdString.find("describe") == 0:
         (namespace,podName)=getPodNameAndNamespaceName()
         if namespace!="" and podName != "":
-            options=cmd.replace("describe","")
-            cmd = "describe " + podName
+            options=cmdString.replace("describe","")
+            cmdString = "describe " + podName
             text=pods.describe(podName,namespace,options) 
 
-    if cmd.find("node") == 0:
+    if cmdString.find("node") == 0:
         selectedNode=applicationState.selected_node
-        options=cmd.replace("node","").strip()
+        options=cmdString.replace("node","").strip()
         text=nodes.describe(options,selectedNode)
         if options == "":
             options = selectedNode
-        cmd = "describe node %s " % options
+        cmdString = "describe node %s " % options
 
-    if cmd.find("delete") == 0:
+    if cmdString.find("delete") == 0:
         (namespace,podName)=getPodNameAndNamespaceName()
         text=pods.delete(podName,namespace)
-        cmd = "delete pod %s" % podName
+        cmdString = "delete pod %s" % podName
         refreshUIAfterCmd = True
 
+    if cmdString.find("shell") == 0:
+        shellCmd = cmdString.replace("shell","").strip()
+        text=cmd.executeCmd(shellCmd)
+
     if text != "":
-        appendToOutput(text,cmd=cmd)
+        appendToOutput(text,cmdString=cmdString)
         #appendToOutput("\n".join([outputArea.text,text]),cmd=cmd)
         #outputArea.text="\n".join([outputArea.text,text])
     
