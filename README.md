@@ -13,6 +13,8 @@ Features include (and more planned):
 - Option for single executable, for easy installation.
 - Colors, if terminal supports them.
 
+<img src="images/kubeterminal_05.png" width="500px"/>
+
 ## Installation and usage
 
 - Python 3.
