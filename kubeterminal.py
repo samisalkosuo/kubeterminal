@@ -113,6 +113,10 @@ def logspod_(event):
     updateState()
     updateUI("namespacepods")
 
+@kb.add('G')
+def toendofoutputbuffer_(event):    
+    outputArea.buffer.cursor_down(outputArea.document.line_count)
+
 #content windows
 namespaceWindow = RadioList(namespaces.list())
 namespaceWindowFrame= Frame(namespaceWindow,title="Namespaces",height=8,width=27)
@@ -233,6 +237,7 @@ Key bindings
 - <ctrl-l>, show logs of currently selected pod (without any options).
 - <ctrl-d>, show description of currently selected pod (without any options).
 - <ctrl-r>, refresh pod list.
+- <shift-g>, to the end of Output-window buffer.
 
 Commands:
 
