@@ -13,6 +13,8 @@ from prompt_toolkit.key_binding.bindings.focus import focus_next, focus_previous
 from prompt_toolkit.keys import Keys
 from prompt_toolkit import eventloop
 from prompt_toolkit.shortcuts import yes_no_dialog
+from prompt_toolkit.utils import Event
+from prompt_toolkit.filters import to_filter
 
 from kubectl import namespaces,pods,nodes
 from application import state,lexer
@@ -139,22 +141,29 @@ upper_left_container = VSplit([namespaceWindowFrame,
                 #Window(height=1, char='-'),
                 nodeWindowFrame])
 
-#def podAreaAcceptHandler(buffer):
-#    outputArea.text=buffer.text
-    
+#listens cursos changes in pods list
+def podListCursorChanged(buffer):
+    pass
+    #appendToOutput(buffer.document.current_line)
+    #from prompt_toolkit.application import get_app
+    #get_app().invalidate()
+    #updateUI("nodepods")
+    #print("jee: ",buffer.document.current_line)
+
+
 #pods window
 podListArea = TextArea(text="", 
                 multiline=True,
                 wrap_lines=False,
                 scrollbar=enableScrollbar,
                 lexer=lexer.PodStatusLexer(),
- #               accept_handler=podAreaAcceptHandler,
-                read_only=True
-                
+                read_only=True                
                 )
-podListAreaFrame= Frame(podListArea,title="Pods",width=80)
-#TODO: somehow add on_cursor_position_changed event to TextArea
 
+#add listener to cursor position changed
+podListArea.buffer.on_cursor_position_changed=Event(podListArea.buffer,podListCursorChanged)
+podListArea.window.cursorline = to_filter(True)
+podListAreaFrame = Frame(podListArea,title="Pods",width=80)
 
 left_container = HSplit([upper_left_container, 
                 #HorizontalLine(),
