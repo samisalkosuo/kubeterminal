@@ -27,7 +27,7 @@ Features include (and more planned):
 - Install and configure kubectl.
 - Login to Kubernetes cluster before using KubeTerminal.
 - Start KubeTerminal:
-  - ```python3.7 kubeterminalpy```
+  - ```python3.7 kubeterminal.py```
 - Basic commands:
   - help: &lt;ctrl-h>
   - refresh pod list: &lt;ctrl-r>  
@@ -75,21 +75,6 @@ Or, to create Linux executable using Docker:
 - Executable name:
   - ```kubeterminal.bin```
 
-
-## TODO
-
-Some, but not all, things to do:
-
-- Refactor code.
-- ~~Make binary package that includes Python 3 runtime (for offline installations).~~
-- Add shell capability.
-- Add Helm commands.
-- Make customizable window layout.
-- Add Kube services and ingress.
-- Add Kube storage. 
-- Installation using pip.
-- Version info.
-- Refactor code.
 
 ## Screenshots
 
