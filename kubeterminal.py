@@ -295,6 +295,9 @@ Commands:
         shellCmd = cmdString.replace("shell","").strip()
         text=cmd.executeCmd(shellCmd)
 
+    if cmdString.find("cls") == 0:
+        clearOutputWindow()
+
     if text != "":
         appendToOutput(text,cmdString=cmdString)
         #appendToOutput("\n".join([outputArea.text,text]),cmd=cmd)
@@ -303,9 +306,11 @@ Commands:
     if refreshUIAfterCmd == True:
         updateUI("namespacepods")
         
-    
 def commandPrompt(line_number, wrap_count):
     return "command>"
+
+def clearOutputWindow():
+    outputArea.text = ""
 
 command_container = TextArea(text="", multiline=False,accept_handler=commandHander,get_line_prefix=commandPrompt)
 commandWindowFrame= Frame(command_container,title="KubeTerminal (Ctrl-d to describe pod, Ctrl-l to show logs, Esc to exit, Tab to switch focus and refresh UI, 'help' for help)",height=4)
