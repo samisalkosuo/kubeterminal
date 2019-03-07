@@ -15,6 +15,9 @@ class PodStatusLexer(Lexer):
             if "CrashLoopBackOff" in line :
                 return [(NAMED_COLORS["Red"],line)]
             
+            #if document.current_line in line:
+            #    return [(NAMED_COLORS["Black"],line)]
+
             #unknown, yellow
             return [(NAMED_COLORS["Yellow"],line)]
             

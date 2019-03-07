@@ -18,7 +18,11 @@ def list(namespace,nodehost=None):
     podsString=podsString.strip()
     if nodehost == "all":
         nodehost=None
-        
+    
+    if nodehost == "worker":
+        #kubectl get nodes -l node-role.kubernetes.io/worker=true
+        pass
+
     if nodehost != None:
         #get pods in given nodehost
         podsList=[]
