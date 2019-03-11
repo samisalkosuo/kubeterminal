@@ -251,6 +251,7 @@ Key bindings
 Commands:
 
 - help - this help.
+- cls - clear Output-window.
 - delete - delete currently selected pod.
 - describe <describe options> - show description of currently selected pod.
 - logs <options> - show logs of currently selected pod.
