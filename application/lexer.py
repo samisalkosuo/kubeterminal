@@ -8,12 +8,25 @@ class PodStatusLexer(Lexer):
         #colors = list(sorted(NAMED_COLORS, key=NAMED_COLORS.get))
         def get_line(lineno):
             line = document.lines[lineno]
-            #OK, green
-            if "Running" in line or "Completed"  in line:
-                return [(NAMED_COLORS["Green"],line)]
+
             #error, red
-            if "CrashLoopBackOff" in line :
+            if "CrashLoopBackOff" in line or "Terminating" in line:
                 return [(NAMED_COLORS["Red"],line)]
+
+            if "Completed" in line:
+                return [(NAMED_COLORS["GreenYellow"],line)]
+
+            # if Running and 0/something => GreenYellow
+            if "Running" in line and "0/" in line:
+                return [(NAMED_COLORS["Yellow"],line)]
+
+            if "0/" in line:
+                return [(NAMED_COLORS["Yellow"],line)]
+
+            #OK, green
+            if "Running" in line:
+                return [(NAMED_COLORS["Green"],line)]
+
             
             #if document.current_line in line:
             #    return [(NAMED_COLORS["Black"],line)]
