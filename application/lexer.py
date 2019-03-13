@@ -50,6 +50,11 @@ class OutputAreaLexer(Lexer):
             if line.find("TIMEOUT ") == 0:
                 return [(NAMED_COLORS["Yellow"],line)]
 
+            lowerLine = line.lower()
+            #TODO: some kind of configuration for error lines
+            if lowerLine.find(" error ") > 0 or lowerLine.find("exception: ")>0:
+                return [(NAMED_COLORS["Red"],line)]
+
             #default, white
             #defaultColor=NAMED_COLORS["White"]
             defaultColor="#bbbbbb"
