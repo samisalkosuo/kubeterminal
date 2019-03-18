@@ -2,6 +2,7 @@ icp_login.*
 kubeterminal.bin
 tmp/
 todo.md
+samples/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
