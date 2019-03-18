@@ -1,5 +1,6 @@
 
 from .cmd import getNamespaces,getPods,describePod,logsPod,deletePod
+from .nodes import getWorkerNodeNames
 
 def delete(podName,namespaceName):
     return deletePod(podName,namespaceName)
@@ -14,47 +15,102 @@ def logs(podName,namespaceName,options):
 
 def list(namespace,nodehost=None):
     '''Return pods in namespace'''
-    podsString=getPods(namespace)
-    podsString=podsString.strip()
     if nodehost == "all":
         nodehost=None
     
-    if nodehost == "worker":
+    nodeNames=None
+    if nodehost == "workers":
+        nodehost=None
+        nodeNames = getWorkerNodeNames()
+        #print(workerNodeNames)
         #kubectl get nodes -l node-role.kubernetes.io/worker=true
-        pass
+        #kubectl get pods --all-namespaces  --no-headers --field-selector spec.nodeName=10.31.10.126
+        #return "\n".join(workerNodeNames)
 
+    podsString=getPods(namespace,nodeNameList=nodeNames)
+    podsString=podsString.strip()
+    
+
+    podsList=[]
     if nodehost != None:
         #get pods in given nodehost
-        podsList=[]
         pods=podsString.split('\n')
         for pod in pods:
             if pod.find(nodehost)>-1:
                 podsList.append(pod)
-        return "\n".join(podsList)
+        
+        #return "\n".join(podsList)
+    else:
+        podsList=podsString.split('\n')
+        
 
-    if 1 == 1:
-        return podsString
+    #sort list
+    podsList.sort()
+    return prettyPrint(podFieldsList(podsList),justify="L")
+#        return "\n".join(podsList)
+        #return podsString
     
+def podFieldsList(podsList):
+    #return list of pod dictioaries
     #not used yet
-    podsList=[]
-    pods=podsString.split('\n')
-    for pod in pods:
-        podDict=dict()
+    podsFieldsList=[]
+    #pods=podsString.split('\n')
+    for pod in podsList:
+        podFieldList=[]
         fields=pod.split()
-        if len(fields) > 4:
-            if namespace == "all-namespaces":
-                podDict["namespace"]=fields[0]
-                podDict["name"]=fields[1]
-                podDict["ready"]=fields[2]
-                podDict["status"]=fields[3]
-                podDict["restarts"]=fields[4]
-                podDict["age"]=fields[5]
-            else:
-                podDict["name"]=fields[0]
-                podDict["ready"]=fields[1]
-                podDict["status"]=fields[2]
-                podDict["restarts"]=fields[3]
-                podDict["age"]=fields[4]
-            podsList.append(podDict)
+        podsFieldsList.append(fields)
+        # if len(fields) == 8:
+        #     #all namespaces
+        #     podDict["namespace"]=fields[0]
+        # singeNamespaceOffset=0
+        # if len(fields) == 7:
+        #     #single namespaces
+        #     singeNamespaceOffset=1
+
+        # podDict["name"] = fields[1-singeNamespaceOffset]
+        # )
+        # podDict["ready"] = fields[2-singeNamespaceOffset]
+        # podDict["status"] = fields[3-singeNamespaceOffset]
+        # podDict["restarts"] = fields[4-singeNamespaceOffset]
+        # podDict["age"] = fields[5-singeNamespaceOffset]
+        # podDict["pod_ip"] = fields[6-singeNamespaceOffset]
+        # podDict["node_ip"] = fields[7-singeNamespaceOffset]
+
+        # podsList.append(podDict)
     
-    return podsList
+    return podsFieldsList
+
+# Pretty Print table in tabular format
+# Original from: http://code.activestate.com/recipes/578801-pretty-print-table-in-tabular-format/
+def prettyPrint(table, justify = "R", columnWidth = 0):
+    
+    #get max column widths
+    defaultColumnWidth=15 #15 is length of IP address
+    def maxColumnWidth(columnIndex):
+        columnWidth=0
+        for row in table:
+            width = len(str(row[columnIndex]))
+            if width > columnWidth:
+                columnWidth = width
+        return columnWidth
+
+    #all column widths
+    allWidths=[]
+    for i in range(len(table[0])):
+        allWidths.append(maxColumnWidth(i))
+
+    outputStr = ""
+    for row in table:
+        rowList = [] 
+        for i in range(len(row)):
+            col = row[i]
+        #for col in row:
+            columnWidth = allWidths[i]
+            if justify == "R": # justify right
+                rowList.append(str(col).rjust(columnWidth))
+            elif justify == "L": # justify left
+                rowList.append(str(col).ljust(columnWidth))
+            elif justify == "C": # justify center
+                rowList.append(str(col).center(columnWidth))
+        outputStr += '  '.join(rowList) + "\n"
+    return outputStr

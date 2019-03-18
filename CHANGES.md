@@ -2,6 +2,9 @@
 
 - Added cls-command to help-command.
 - Added more colors to Pods-window.
+- Added red to some error/exception lines in Output-window.
+- Added "all worker nodes" to Nodes-window.
+- Added pretty printing to Pods-window.
 
 ## 0.2
 

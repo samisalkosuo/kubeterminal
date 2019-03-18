@@ -25,6 +25,9 @@ applicationState = state.State()
 enableMouseSupport = False
 enableScrollbar = False
 
+#buffer is set when search "/" is pressed
+bufferWhenSearching=None
+
 def updateState():
     
     selected_namespace=namespaceWindow.current_value
@@ -46,31 +49,33 @@ def updateState():
         updateUI("nodepods")
 
 def updateUI(updateArea):
+    
     if updateArea == "selectedpod":
         appendToOutput(applicationState.selected_pod)
 
-    if updateArea == "nodepods":
-        #TODO: all pods in selected node and namespace
-        podsList=pods.list(applicationState.current_namespace,applicationState.selected_node)
-        title="Pods (%s)" % applicationState.selected_node
-        updatePodListArea(podsList, title)
-
-    if updateArea == "namespacepods":
-        podsList=pods.list(applicationState.current_namespace,applicationState.selected_node)
+    if updateArea == "nodepods" or updateArea == "namespacepods":
+        ns = applicationState.current_namespace
+        podsList=pods.list(ns,applicationState.selected_node)        
+        title="Pods (ns: %s, nodes: %s)" % (ns, applicationState.selected_node)
         podListArea.text=podsList
-        podListAreaFrame.title="Pods (%s)" % applicationState.current_namespace
-        if 1 == 2:
-            podsString=[]
-            for pod in podsList:
-                podsString.append(pod["name"])
-            podListArea.text = "\n".join(podsString)
-        
-def updatePodListArea(podListString, title):
+        podListAreaFrame.title=title
 
-    #prettify pods list
 
-    podListArea.text=podListString
-    podListAreaFrame.title=title
+    # if updateArea == "nodepods":
+    #     podsList=pods.list(applicationState.current_namespace,applicationState.selected_node)        
+    #     title="Pods (%s)" % applicationState.selected_node
+    #     updatePodListArea(podsList, title)
+
+    # if updateArea == "namespacepods":
+    #     podsList=pods.list(applicationState.current_namespace,applicationState.selected_node)
+    #     podListArea.text=podsList
+    #     podListAreaFrame.title="Pods (%s)" % applicationState.current_namespace
+    # if 1 == 2:
+    #     podsString=[]
+    #     for pod in podsList:
+    #         podsString.append(pod["name"])
+    #     podListArea.text = "\n".join(podsString)
+
 
 
 kb = KeyBindings()
@@ -118,6 +123,14 @@ def logspod_(event):
 @kb.add('G')
 def toendofoutputbuffer_(event):    
     outputArea.buffer.cursor_down(outputArea.document.line_count)
+
+#search keyboard
+@kb.add('/')
+def searchbuffer_(event):
+    bufferWhenSearching = layout.current_control
+    layout.focus(command_container)
+    command_container.text="/"
+    command_container.buffer.cursor_right()
 
 #content windows
 namespaceWindow = RadioList(namespaces.list())
@@ -308,6 +321,12 @@ Commands:
     if cmdString.find("cls") == 0:
         clearOutputWindow()
 
+    if cmdString.find("/") == 0:
+        #searching
+        #textToSearch = bufferWhenSearching.document.text
+        appendToOutput("TODO: search command",cmdString=cmdString)
+        
+
     if text != "":
         appendToOutput(text,cmdString=cmdString)
         #appendToOutput("\n".join([outputArea.text,text]),cmd=cmd)
@@ -335,8 +354,7 @@ layout = Layout(root_container)
 
 app = Application(layout=layout,
                 key_bindings=kb,
-                full_screen=True,
+                full_screen=True,             
                 mouse_support=enableMouseSupport
                 )
-
 app.run()
