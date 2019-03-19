@@ -96,8 +96,14 @@ def prettyPrint(table, justify = "R", columnWidth = 0):
 
     #all column widths
     allWidths=[]
-    for i in range(len(table[0])):
-        allWidths.append(maxColumnWidth(i))
+    try:        
+        for i in range(len(table[0])):
+            allWidths.append(maxColumnWidth(i))
+    except:
+        #if table is empty string, this will be catched
+        #and empty string is returned
+        return ""
+        
 
     outputStr = ""
     for row in table:
