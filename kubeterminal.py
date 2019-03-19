@@ -62,26 +62,8 @@ def updateUI(updateArea):
         podListAreaFrame.title=title
 
 
-    # if updateArea == "nodepods":
-    #     podsList=pods.list(applicationState.current_namespace,applicationState.selected_node)        
-    #     title="Pods (%s)" % applicationState.selected_node
-    #     updatePodListArea(podsList, title)
-
-    # if updateArea == "namespacepods":
-    #     podsList=pods.list(applicationState.current_namespace,applicationState.selected_node)
-    #     podListArea.text=podsList
-    #     podListAreaFrame.title="Pods (%s)" % applicationState.current_namespace
-    # if 1 == 2:
-    #     podsString=[]
-    #     for pod in podsList:
-    #         podsString.append(pod["name"])
-    #     podListArea.text = "\n".join(podsString)
-
-
-
 kb = KeyBindings()
 # Global key bindings.
-
 
 @kb.add('tab')
 def tab_(event):
@@ -137,15 +119,6 @@ def searchbuffer_(event):
 namespaceWindow = RadioList(namespaces.list())
 namespaceWindowFrame= Frame(namespaceWindow,title="Namespaces",height=8,width=27)
 
-# nodeListArea = TextArea(text=nodes.list(), 
-#                 multiline=True,
-#                 wrap_lines=False,
-#                 scrollbar=True,
-#                 #lexer=lexer.PodStatusLexer(),
-#  #               accept_handler=podAreaAcceptHandler,
-#                 read_only=False
-                
-#                 )
 nodeListArea = RadioList(nodes.list())
 
 nodeWindowFrame= Frame(nodeListArea,title="Nodes",height=8,width=53)
