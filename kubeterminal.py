@@ -55,8 +55,9 @@ def updateUI(updateArea):
 
     if updateArea == "nodepods" or updateArea == "namespacepods":
         ns = applicationState.current_namespace
-        podsList=pods.list(ns,applicationState.selected_node)        
-        title="Pods (ns: %s, nodes: %s)" % (ns, applicationState.selected_node)
+        podsList=pods.list(ns,applicationState.selected_node)
+        podCount = len(podsList.split("\n"))
+        title="%d Pods (ns: %s, nodes: %s)" % (podCount,ns, applicationState.selected_node)
         podListArea.text=podsList
         podListAreaFrame.title=title
 
