@@ -46,7 +46,10 @@ def list(namespace,nodehost=None):
 
     #sort list
     podsList.sort()
-    return prettyPrint(podFieldsList(podsList),justify="L")
+    podsListString = prettyPrint(podFieldsList(podsList),justify="L")
+    #remove empty lines
+    podsListString = "".join([s for s in podsListString.strip().splitlines(True) if s.strip()])
+    return podsListString
 #        return "\n".join(podsList)
         #return podsString
     
