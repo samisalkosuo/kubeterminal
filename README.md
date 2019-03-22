@@ -84,9 +84,6 @@ Or, to create Linux executable using Docker:
 
 ![KubeTerminal 03](images/kubeterminal_03.png)
 
-![KubeTerminal 04](images/kubeterminal_04.png)
-
-
 ## Background
 
 I'm working with Kubernetes quite a lot and I found that there a few basic commands that I use very, very often. For example:
