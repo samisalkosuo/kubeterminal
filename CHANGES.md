@@ -1,3 +1,7 @@
+## 0.4
+
+- Added search-command. Bound to "/" key.
+
 ## 0.3
 
 - Added cls-command to help-command.

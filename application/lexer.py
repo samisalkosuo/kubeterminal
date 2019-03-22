@@ -41,23 +41,68 @@ class OutputAreaLexer(Lexer):
     def lex_document(self, document):
         #colors = list(sorted(NAMED_COLORS, key=NAMED_COLORS.get))
         def get_line(lineno):
-            line = document.lines[lineno]
-            #OK, green
-            
-            if line.find("=== ") == 0:
-                return [(NAMED_COLORS["Cyan"],line)]
-            
-            if line.find("TIMEOUT ") == 0:
-                return [(NAMED_COLORS["Yellow"],line)]
 
-            lowerLine = line.lower()
-            #TODO: some kind of configuration for error lines
-            if lowerLine.find(" error ") > 0 or lowerLine.find("exception: ")>0:
-                return [(NAMED_COLORS["Red"],line)]
+            #default lexer used when search string not found or search not speficied            
+            def defaultLexer(line):
+                if line.find("=== ") == 0:
+                    return [(NAMED_COLORS["Cyan"],line)]
+                
+                if line.find("TIMEOUT ") == 0:
+                    return [(NAMED_COLORS["Yellow"],line)]
 
+                #TODO: some kind of configuration for error lines
+                if lowerLine.find(" error ") > 0 or lowerLine.find(" error") > 0 or lowerLine.find("exception: ")>0:
+                    return [(NAMED_COLORS["Red"],line)]
+
+                return [(defaultColor,line)]
+            
             #default, white
             #defaultColor=NAMED_COLORS["White"]
             defaultColor="#bbbbbb"
-            return [(defaultColor,line)]
+
+            line = document.lines[lineno]
+            lowerLine = line.lower()
+
+            #import search string from state
+            from .state import searchString
+            if searchString != "":
+                #TODO add case sensitivity as config option
+                searchString = searchString.lower()
+                
+                searchStringLength = len(searchString)
+                searchResultFormat = 'bg:ansibrightyellow ansiblack'
+                startIndex = 0
+                foundIndex = lowerLine.find(searchString,startIndex)
+                formattedText = []
+                if foundIndex > -1:
+                    while foundIndex > -1:
+                        formattedText.append((defaultColor,line[startIndex:foundIndex]))
+                        #new start index is lenght of search string + found index
+                        startIndex = foundIndex + searchStringLength
+                        #found text
+                        formattedText.append((searchResultFormat,line[foundIndex:startIndex]))
+                        foundIndex = lowerLine.find(searchString,startIndex)
+                else:
+                    return defaultLexer(line)
+                    #formattedText.append((defaultColor,line))
+                if startIndex > 0:
+                    #add end of the line using default format
+                    formattedText.append((defaultColor,line[startIndex:]))
+                return formattedText
+            else:
+                return defaultLexer(line)        
+            # if line.find("=== ") == 0:
+            #     return [(NAMED_COLORS["Cyan"],line)]
+            
+            # if line.find("TIMEOUT ") == 0:
+            #     return [(NAMED_COLORS["Yellow"],line)]
+
+            # #TODO: some kind of configuration for error lines
+            # if lowerLine.find(" error ") > 0 or lowerLine.find("exception: ")>0:
+            #     return [(NAMED_COLORS["Red"],line)]
+
+            # return [(defaultColor,line)]
             
         return get_line
+
+    

@@ -20,13 +20,11 @@ from kubectl import namespaces,pods,nodes
 from application import state,lexer
 from kubectl import cmd 
 
-applicationState = state.State()
+applicationState = state#state.State()
 
 enableMouseSupport = False
 enableScrollbar = False
 
-#buffer is set when search "/" is pressed
-bufferWhenSearching=None
 
 def updateState():
     
@@ -110,7 +108,7 @@ def toendofoutputbuffer_(event):
 #search keyboard
 @kb.add('/')
 def searchbuffer_(event):
-    bufferWhenSearching = layout.current_control
+    #search both pods and output window at the same time
     layout.focus(command_container)
     command_container.text="/"
     command_container.buffer.cursor_right()
@@ -234,6 +232,7 @@ Key bindings
 - <ctrl-d>, show description of currently selected pod (without any options).
 - <ctrl-r>, refresh pod list.
 - <shift-g>, to the end of Output-window buffer.
+- / -  search string in Output-window.
 
 Commands:
 
@@ -297,8 +296,8 @@ Commands:
 
     if cmdString.find("/") == 0:
         #searching
-        #textToSearch = bufferWhenSearching.document.text
-        appendToOutput("TODO: search command",cmdString=cmdString)
+        applicationState.searchString=cmdString[1:]
+        #appendToOutput("TODO: search: %s" % applicationState.searchString, cmdString=cmdString)
         
 
     if text != "":
