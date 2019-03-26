@@ -186,8 +186,10 @@ def appendToOutput(text,cmdString="",overwrite=False):
 
     if text is None or "No resources found" in text:    
         return
-
-    now = datetime.datetime.utcnow().isoformat()
+    
+    #TODO: option to set UTC or local
+    #now = datetime.datetime.utcnow().isoformat()
+    now = datetime.datetime.now().isoformat()
     if cmdString == "":
         header = "=== %s ===" % now
     else:
@@ -242,6 +244,7 @@ Commands:
 - describe <describe options> - show description of currently selected pod.
 - logs <options> - show logs of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.
+- save [<filename>] - save Output-window contents to a file.
 - shell <any shell command> - executes any shell command.
 
 """
@@ -298,8 +301,19 @@ Commands:
         #searching
         applicationState.searchString=cmdString[1:]
         #appendToOutput("TODO: search: %s" % applicationState.searchString, cmdString=cmdString)
-        
 
+    if cmdString.find("save") == 0:
+        #save Output-window to a file
+        cmdArgs = cmdString.split()
+        if len(cmdArgs) > 1:
+            #filename is the second argument
+            filename = cmdArgs[1]
+        else:
+            filename = "kubeterminal_output_%s.txt" % datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        with open(filename, "w") as outputFile:
+            outputFile.write(outputArea.text)
+        text="Output saved to file '%s'." % filename
+        
     if text != "":
         appendToOutput(text,cmdString=cmdString)
         #appendToOutput("\n".join([outputArea.text,text]),cmd=cmd)

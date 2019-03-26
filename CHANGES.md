@@ -1,3 +1,7 @@
+## 0.5
+
+- Added save-command to save Output-window contents to a file.
+
 ## 0.4
 
 - Added search-command. Bound to "/" key.
