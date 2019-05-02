@@ -1,5 +1,5 @@
 
-from .cmd import getNamespaces,getPods,describePod,logsPod,deletePod
+from .cmd import getNamespaces,getPods,describePod,logsPod,deletePod,getPodYaml,getPodJSON
 from .nodes import getWorkerNodeNames
 
 def delete(podName,namespaceName,force):
@@ -10,8 +10,13 @@ def describe(podName,namespaceName,options):
 
 def logs(podName,namespaceName,options):
     logText = logsPod(podName,namespaceName,options)
-
     return logText
+
+def yaml(podName,namespaceName):
+    return getPodYaml(podName,namespaceName)
+
+def json(podName,namespaceName):
+    return getPodJSON(podName,namespaceName)
 
 def list(namespace,nodehost=None):
     '''Return pods in namespace'''

@@ -69,6 +69,27 @@ def describePod(podName,namespace,options):
     output = executeCmd(cmd)
     return output
 
+def getPodYaml(podName,namespace):
+    cmd="kubectl get pod " + podName
+
+    cmd=cmd+" -n " + namespace
+    cmd=cmd+" -o yaml "
+    output = ""
+    output = executeCmd(cmd)
+
+    return output
+
+def getPodJSON(podName,namespace):
+    cmd="kubectl get pod " + podName
+
+    cmd=cmd+" -n " + namespace
+    cmd=cmd+" -o json "
+    output = ""
+    output = executeCmd(cmd)
+
+    return output
+
+
 def logsPod(podName,namespace,options):
     cmd="kubectl logs " + podName
     cmd=cmd +" -n "+namespace +" "+options

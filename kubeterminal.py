@@ -242,10 +242,12 @@ Commands:
 - cls - clear Output-window.
 - delete [--force] - delete currently selected pod, optionally force delete.
 - describe <describe options> - show description of currently selected pod.
+- json - get JSON of currently selected pod.
 - logs <options> - show logs of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.
 - save [<filename>] - save Output-window contents to a file.
 - shell <any shell command> - executes any shell command.
+- yaml - get YAML of currently selected pod.
 
 """
     def getPodNameAndNamespaceName():
@@ -275,6 +277,18 @@ Commands:
             options=cmdString.replace("describe","")
             cmdString = "describe " + podName
             text=pods.describe(podName,namespace,options) 
+
+    if cmdString.find("yaml") == 0:
+        (namespace,podName)=getPodNameAndNamespaceName()
+        if namespace!="" and podName != "":
+            text=pods.yaml(podName,namespace) 
+            cmdString = "yaml " + podName
+
+    if cmdString.find("json") == 0:
+        (namespace,podName)=getPodNameAndNamespaceName()
+        if namespace!="" and podName != "":
+            text=pods.json(podName,namespace) 
+            cmdString = "json " + podName
 
     if cmdString.find("node") == 0:
         selectedNode=applicationState.selected_node
