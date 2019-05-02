@@ -2,8 +2,8 @@
 from .cmd import getNamespaces,getPods,describePod,logsPod,deletePod
 from .nodes import getWorkerNodeNames
 
-def delete(podName,namespaceName):
-    return deletePod(podName,namespaceName)
+def delete(podName,namespaceName,force):
+    return deletePod(podName,namespaceName,force)
 
 def describe(podName,namespaceName,options):
     return describePod(podName,namespaceName,options)

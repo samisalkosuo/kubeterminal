@@ -240,7 +240,7 @@ Commands:
 
 - help - this help.
 - cls - clear Output-window.
-- delete - delete currently selected pod.
+- delete [--force] - delete currently selected pod, optionally force delete.
 - describe <describe options> - show description of currently selected pod.
 - logs <options> - show logs of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.
@@ -286,7 +286,10 @@ Commands:
 
     if cmdString.find("delete") == 0:
         (namespace,podName)=getPodNameAndNamespaceName()
-        text=pods.delete(podName,namespace)
+        force=False
+        if (cmdString.find("--force") > -1):
+            force=True
+        text=pods.delete(podName,namespace,force)
         cmdString = "delete pod %s" % podName
         refreshUIAfterCmd = True
 

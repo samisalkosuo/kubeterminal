@@ -53,9 +53,12 @@ def executeBackgroudCmd(cmd):
     return "Delete pod started in background. Refresh pod list to see status."       
     
 
-def deletePod(podName,namespace):
+def deletePod(podName,namespace,force):
     cmd="kubectl delete pod " + podName
-    cmd=cmd +" -n "+namespace
+    cmd=cmd + " -n " + namespace
+    if (force == True):
+        cmd=cmd + " --grace-period=0 --force"
+    print(cmd)
     output = executeBackgroudCmd(cmd)
     return output
 
