@@ -1,3 +1,9 @@
+== 0.6
+
+- Added --force to delete-command.
+- Added yaml-command to get YAML of selected pod.
+- Added json-command to get YAML of selected pod.
+
 == 0.5
 
 * Added save-command to save Output-window contents to a file.
