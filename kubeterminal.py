@@ -251,7 +251,7 @@ Commands:
 - cls - clear Output-window.
 - delete [--force] - delete currently selected pod, optionally force delete.
 - describe <describe options> - show description of currently selected pod.
-- exec <command> - exec command in currently selected pod.
+- exec [-c <container_name>] <command> - exec command in currently selected pod.
 - json - get JSON of currently selected pod.
 - logs <options> - show logs of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.

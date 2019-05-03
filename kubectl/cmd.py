@@ -94,7 +94,15 @@ def execCmd(podName,namespace,command):
     cmd="kubectl exec " + podName
 
     cmd=cmd+" -n " + namespace
-    cmd=cmd+" -- " + command
+    if (command.find("-c")==0):
+        #there is container
+        commandList=command.split()
+        #first is -c
+        #second is container name
+        containerName=commandList[1]
+        cmd=cmd+" -c %s -- %s " % (containerName," ".join(commandList[2:]))
+    else:
+      cmd=cmd+" -- " + command
     output = executeCmd(cmd)
 
     return output
