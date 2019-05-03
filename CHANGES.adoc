@@ -1,8 +1,12 @@
+== 0.7
+
+* Added exec-command to execute commands in a pod.
+
 == 0.6
 
-- Added --force to delete-command.
-- Added yaml-command to get YAML of selected pod.
-- Added json-command to get YAML of selected pod.
+* Added --force to delete-command.
+* Added yaml-command to get YAML of selected pod.
+* Added json-command to get YAML of selected pod.
 
 == 0.5
 

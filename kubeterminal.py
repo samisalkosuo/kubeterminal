@@ -109,6 +109,15 @@ def toendofoutputbuffer_(event):
 @kb.add('/')
 def searchbuffer_(event):
     #search both pods and output window at the same time
+    if (len(command_container.text)>0):
+        #if length of text is command container is > 0
+        # assume that command is currently written
+        #ignore search
+        command_container.text=command_container.text+"/"
+        command_container.buffer.cursor_right(len(command_container.text))
+        
+        return
+    
     layout.focus(command_container)
     command_container.text="/"
     command_container.buffer.cursor_right()
@@ -242,6 +251,7 @@ Commands:
 - cls - clear Output-window.
 - delete [--force] - delete currently selected pod, optionally force delete.
 - describe <describe options> - show description of currently selected pod.
+- exec <command> - exec command in currently selected pod.
 - json - get JSON of currently selected pod.
 - logs <options> - show logs of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.
@@ -310,6 +320,12 @@ Commands:
     if cmdString.find("shell") == 0:
         shellCmd = cmdString.replace("shell","").strip()
         text=cmd.executeCmd(shellCmd)
+
+    if cmdString.find("exec") == 0:
+        (namespace,podName)=getPodNameAndNamespaceName()
+        command = cmdString.replace("exec","").strip()
+        cmdString = "exec %s %s" % (podName,command)
+        text=pods.exec(podName,namespace,command)
 
     if cmdString.find("cls") == 0:
         clearOutputWindow()

@@ -90,6 +90,17 @@ def getPodJSON(podName,namespace):
     return output
 
 
+def execCmd(podName,namespace,command):
+    cmd="kubectl exec " + podName
+
+    cmd=cmd+" -n " + namespace
+    cmd=cmd+" "+command
+    output = executeCmd(cmd)
+
+    return output
+
+
+
 def logsPod(podName,namespace,options):
     cmd="kubectl logs " + podName
     cmd=cmd +" -n "+namespace +" "+options
