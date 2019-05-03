@@ -253,7 +253,7 @@ Commands:
 - describe <describe options> - show description of currently selected pod.
 - exec [-c <container_name>] <command> - exec command in currently selected pod.
 - json - get JSON of currently selected pod.
-- logs <options> - show logs of currently selected pod.
+- logs [-c <container_name>] - show logs of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.
 - save [<filename>] - save Output-window contents to a file.
 - shell <any shell command> - executes any shell command.
