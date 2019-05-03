@@ -94,7 +94,7 @@ def execCmd(podName,namespace,command):
     cmd="kubectl exec " + podName
 
     cmd=cmd+" -n " + namespace
-    cmd=cmd+" "+command
+    cmd=cmd+" -- " + command
     output = executeCmd(cmd)
 
     return output
