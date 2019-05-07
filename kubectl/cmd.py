@@ -58,7 +58,6 @@ def deletePod(podName,namespace,force):
     cmd=cmd + " -n " + namespace
     if (force == True):
         cmd=cmd + " --grace-period=0 --force"
-    print(cmd)
     output = executeBackgroudCmd(cmd)
     return output
 
