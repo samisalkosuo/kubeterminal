@@ -1,3 +1,7 @@
+== 0.8
+
+- Removed extra print-statement when deleting pod.
+
 == 0.7
 
 * Added exec-command to execute commands in a pod.
