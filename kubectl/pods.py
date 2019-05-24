@@ -35,7 +35,9 @@ def top(podName,namespaceName,cmdString,isAllNamespaces=False,doAsciiGraph=False
         from ascii_graph.colordata import vcolor
         from ascii_graph.colordata import hcolor
 
-        graph = Pyasciigraph(titlebar='-', graphsymbol='#')
+        graphSymbol='*'
+        titleBarSymbol='-'
+        graph = Pyasciigraph(titlebar=titleBarSymbol, graphsymbol=graphSymbol)
 
         output = ""
         #get data from top output
@@ -90,7 +92,7 @@ def top(podName,namespaceName,cmdString,isAllNamespaces=False,doAsciiGraph=False
             0:  Gre, 50: Yel, 80: Red
             }
             data = hcolor(cpuUsagePercentForNode, thresholds)
-            graph = Pyasciigraph(force_max_value=100, titlebar='-', graphsymbol='#')
+            graph = Pyasciigraph(force_max_value=100, titlebar=titleBarSymbol, graphsymbol=graphSymbol)
             data = cpuUsagePercentForNode
             output= output + "\n"
             cpuTitle='CPU (%)'
