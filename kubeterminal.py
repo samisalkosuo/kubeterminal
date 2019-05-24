@@ -348,7 +348,14 @@ Commands:
             cmdString = "top pod %s" % (podName)
         if cmdString.find("-n") > -1:
             cmdString = "top nodes"
-        text=pods.top(podName,namespace,topCmd,isAllNamespaces())
+        
+        doAsciiGraph=False
+        if topCmd.find("-g") > -1:
+            doAsciiGraph = True
+            topCmd = topCmd.replace("-g","")
+
+        
+        text=pods.top(podName,namespace,topCmd,isAllNamespaces(),doAsciiGraph)
 
     if cmdString.find("cls") == 0:
         clearOutputWindow()

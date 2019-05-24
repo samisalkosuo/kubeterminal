@@ -9,6 +9,7 @@ RUN apt-get install -y python3-pip
 
 RUN pip3 install prompt_toolkit
 RUN pip3 install pyinstaller
+RUN pip3 install ascii_graph
 
 WORKDIR /root
 

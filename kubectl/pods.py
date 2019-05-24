@@ -26,10 +26,83 @@ def labels(podName,namespaceName):
     labelOutput = "\n".join(labelOutput)
     return labelOutput
 
-def top(podName,namespaceName,cmdString,isAllNamespaces=False):
+def top(podName,namespaceName,cmdString,isAllNamespaces=False,doAsciiGraph=False):
     output = getTop(podName,namespaceName,cmdString,isAllNamespaces)
-    return output
+    topOutput = output
+    if doAsciiGraph == True:
+        from ascii_graph import Pyasciigraph
+        from ascii_graph.colors import Gre,Yel,Red
+        from ascii_graph.colordata import vcolor
+        from ascii_graph.colordata import hcolor
 
+        graph = Pyasciigraph(titlebar='-', graphsymbol='#')
+
+        output = ""
+        #get data from top output
+        cpuUsage = []
+        memoryUsage = []
+        cpuUsagePercentForNode = []
+        memoryUsagePercentForNode = []
+        lines = topOutput.split("\n")[1:]
+        podName=None
+        for line in lines:
+            if(len(line)==0):
+                continue
+            fields=line.split()
+            if cmdString.find("-c") > -1:
+                podName=fields[0]
+                cpuUse=(fields[1], int(fields[2].replace("m","")))
+                memUse=(fields[1], int(fields[3].replace("Mi","")))
+            elif cmdString.find("-n") > -1:
+                #nodes, must be before isAllNamespaces check
+                cpuUse=(fields[0], int(fields[1].replace("m","")))
+                memUse=(fields[0], int(fields[3].replace("Mi","")))
+                cpuUsagePercentForNode.append((fields[0], int(fields[2].replace("%",""))))
+                memoryUsagePercentForNode.append((fields[0], int(fields[4].replace("%",""))))
+            elif isAllNamespaces==True:
+                rowTitle="%s/%s" % (fields[0],fields[1])
+                cpuUse=(rowTitle, int(fields[2].replace("m","")))
+                memUse=(rowTitle, int(fields[3].replace("Mi","")))
+            else:
+                cpuUse=(fields[0], int(fields[1].replace("m","")))
+                memUse=(fields[0], int(fields[2].replace("Mi","")))
+            cpuUsage.append(cpuUse)
+            memoryUsage.append(memUse)
+
+        cpuTitle='CPU (millicores)'
+        if podName != None:
+            cpuTitle="%s - %s" % (cpuTitle,podName)
+        for line in  graph.graph(cpuTitle, cpuUsage):
+            output = output + line + "\n"
+
+        memTitle='Memory (Mi bytes)'
+        if podName != None:
+            memTitle="%s - %s" % (memTitle,podName)
+        output= output + "\n"
+        for line in  graph.graph(memTitle, memoryUsage):
+           output = output + line + "\n"
+
+        if cmdString.find("-n") > -1:
+            #add percents for nodes
+            pattern = [Gre, Yel, Red]
+            # Color lines according to Thresholds
+            thresholds = {
+            0:  Gre, 50: Yel, 80: Red
+            }
+            data = hcolor(cpuUsagePercentForNode, thresholds)
+            graph = Pyasciigraph(force_max_value=100, titlebar='-', graphsymbol='#')
+            data = cpuUsagePercentForNode
+            output= output + "\n"
+            cpuTitle='CPU (%)'
+            for line in  graph.graph(cpuTitle, data):
+                output = output + line + "\n"
+
+            output= output + "\n"
+            memTitle='Memory (%)'
+            for line in  graph.graph(memTitle, memoryUsagePercentForNode):
+                output = output + line + "\n"
+
+    return output
 
 def exec(podName,namespaceName,command):
     return execCmd(podName,namespaceName,command)
@@ -38,7 +111,7 @@ def list(namespace,nodehost=None):
     '''Return pods in namespace'''
     if nodehost == "all":
         nodehost=None
-    
+
     nodeNames=None
     if nodehost == "workers":
         nodehost=None
@@ -50,7 +123,7 @@ def list(namespace,nodehost=None):
 
     podsString=getPods(namespace,nodeNameList=nodeNames)
     podsString=podsString.strip()
-    
+
 
     podsList=[]
     if nodehost != None:
@@ -59,11 +132,11 @@ def list(namespace,nodehost=None):
         for pod in pods:
             if pod.find(nodehost)>-1:
                 podsList.append(pod)
-        
+
         #return "\n".join(podsList)
     else:
         podsList=podsString.split('\n')
-        
+
 
     #sort list
     podsList.sort()
@@ -73,7 +146,7 @@ def list(namespace,nodehost=None):
     return podsListString
 #        return "\n".join(podsList)
         #return podsString
-    
+
 def podFieldsList(podsList):
     #return list of pod dictioaries
     #not used yet
@@ -101,13 +174,13 @@ def podFieldsList(podsList):
         # podDict["node_ip"] = fields[7-singeNamespaceOffset]
 
         # podsList.append(podDict)
-    
+
     return podsFieldsList
 
 # Pretty Print table in tabular format
 # Original from: http://code.activestate.com/recipes/578801-pretty-print-table-in-tabular-format/
 def prettyPrint(table, justify = "R", columnWidth = 0):
-    
+
     #get max column widths
     defaultColumnWidth=15 #15 is length of IP address
     def maxColumnWidth(columnIndex):
@@ -120,18 +193,18 @@ def prettyPrint(table, justify = "R", columnWidth = 0):
 
     #all column widths
     allWidths=[]
-    try:        
+    try:
         for i in range(len(table[0])):
             allWidths.append(maxColumnWidth(i))
     except:
         #if table is empty string, this will be catched
         #and empty string is returned
         return ""
-        
+
 
     outputStr = ""
     for row in table:
-        rowList = [] 
+        rowList = []
         for i in range(len(row)):
             col = row[i]
         #for col in row:

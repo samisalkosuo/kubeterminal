@@ -3,6 +3,7 @@
 * Removed extra print-statement when deleting pod.
 * Added labels-command to show labels of selected pod.
 * Added top-command.
+* Added -g option to top-command to show graphics.
 
 == 0.7
 

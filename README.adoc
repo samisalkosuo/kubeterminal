@@ -26,8 +26,9 @@ image::kubeterminal_05.png[KubeTerminal_05,800]
 ** Windows or Linux. 
 *** http://cmder.net/[cmder console] used in Windows 10.
 * Clone/download this repo.
-* Install prompt-toolkit:
-** `pip3 install prompt-toolkit`
+* Install prereqs:
+** `pip install prompt-toolkit`
+** `pip install ascii_graph`
 * Install and configure kubectl.
 * Login to Kubernetes cluster before using KubeTerminal.
 * Start KubeTerminal:
