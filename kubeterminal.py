@@ -259,7 +259,7 @@ Commands:
 - node <node name> - show description of given node, or currently selected node.
 - save [<filename>] - save Output-window contents to a file.
 - shell <any shell command> - executes any shell command.
-- top [-c | -l <label=value> | -n] - show top of pods/containers/labels/nodes.
+- top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
 - yaml - get YAML of currently selected pod.
 
 """
