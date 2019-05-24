@@ -8,7 +8,7 @@ def describe(cmdOptions, selectedNode):
     else:
         node = options
     if node.find("all") > -1:
-        return "Describing all nodes not (yet) supported."
+        return "Describing all nodes not (yet) implemented."
     return describeNode(node)
     
 def getWorkerNodeNames():
