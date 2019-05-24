@@ -253,6 +253,7 @@ Commands:
 - describe <describe options> - show description of currently selected pod.
 - exec [-c <container_name>] <command> - exec command in currently selected pod.
 - json - get JSON of currently selected pod.
+- labels - show labels of currently selected pod.
 - logs [-c <container_name>] - show logs of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.
 - save [<filename>] - save Output-window contents to a file.
@@ -326,6 +327,13 @@ Commands:
         command = cmdString.replace("exec","").strip()
         cmdString = "exec %s %s" % (podName,command)
         text=pods.exec(podName,namespace,command)
+
+    if cmdString.find("label") == 0:
+        (namespace,podName)=getPodNameAndNamespaceName()
+        command = "labels"#cmdString.replace("label","").strip()
+        cmdString = "labels %s" % (podName)
+        text=pods.labels(podName,namespace)
+
 
     if cmdString.find("cls") == 0:
         clearOutputWindow()

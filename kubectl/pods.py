@@ -1,5 +1,5 @@
 
-from .cmd import getNamespaces,getPods,describePod,logsPod,deletePod,getPodYaml,getPodJSON,execCmd
+from .cmd import getNamespaces,getPods,describePod,logsPod,deletePod,getPodYaml,getPodJSON,execCmd,getPodLabels
 from .nodes import getWorkerNodeNames
 
 def delete(podName,namespaceName,force):
@@ -17,6 +17,14 @@ def yaml(podName,namespaceName):
 
 def json(podName,namespaceName):
     return getPodJSON(podName,namespaceName)
+
+def labels(podName,namespaceName):
+    labelOutput = getPodLabels(podName,namespaceName)
+    labelOutput = labelOutput.split("\n")[1].split()[5].split(",")
+    labelOutput.sort()
+    labelOutput = "\n".join(labelOutput)
+    return labelOutput
+
 
 def exec(podName,namespaceName,command):
     return execCmd(podName,namespaceName,command)

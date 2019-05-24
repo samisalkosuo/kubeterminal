@@ -11,7 +11,8 @@ Features include (and more planned):
 * List pods in namespace and/or node.
 * See pod logs.
 * Describe pods.
-** Also YAML and JSON descriptions.
+** Get YAML and JSON descriptions.
+** Get labels.
 * Execute command in a pod.
 * Option for single executable, for easy installation.
 * Colors, if terminal supports them.

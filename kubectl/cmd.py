@@ -88,6 +88,11 @@ def getPodJSON(podName,namespace):
 
     return output
 
+def getPodLabels(podName,namespace):
+    cmd="kubectl get pod %s -n %s --show-labels" % (podName, namespace)
+    output = executeCmd(cmd)
+
+    return output
 
 def execCmd(podName,namespace,command):
     cmd="kubectl exec " + podName
