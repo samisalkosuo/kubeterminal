@@ -25,6 +25,7 @@ applicationState = state#state.State()
 enableMouseSupport = False
 enableScrollbar = False
 
+#TODO: refactor code, all code
 
 def updateState():
     
@@ -258,6 +259,7 @@ Commands:
 - node <node name> - show description of given node, or currently selected node.
 - save [<filename>] - save Output-window contents to a file.
 - shell <any shell command> - executes any shell command.
+- top [-c | -l <label=value> | -n] - show top of pods/containers/labels/nodes.
 - yaml - get YAML of currently selected pod.
 
 """
@@ -274,6 +276,10 @@ Commands:
                 podName=fields[0]
                 namespace=applicationState.current_namespace
         return (namespace,podName)
+
+    def isAllNamespaces():
+        return applicationState.current_namespace == "all-namespaces"
+
 
     if cmdString.find("logs") == 0:
         (namespace,podName)=getPodNameAndNamespaceName()
@@ -330,10 +336,19 @@ Commands:
 
     if cmdString.find("label") == 0:
         (namespace,podName)=getPodNameAndNamespaceName()
-        command = "labels"#cmdString.replace("label","").strip()
         cmdString = "labels %s" % (podName)
         text=pods.labels(podName,namespace)
 
+    if cmdString.find("top") == 0:
+        (namespace,podName)=getPodNameAndNamespaceName()
+        topCmd=cmdString
+        if cmdString.find("-l") > -1:
+            cmdString = cmdString.replace("-l","label")
+        if cmdString.find("-c") > -1:
+            cmdString = "top pod %s" % (podName)
+        if cmdString.find("-n") > -1:
+            cmdString = "top nodes"
+        text=pods.top(podName,namespace,topCmd,isAllNamespaces())
 
     if cmdString.find("cls") == 0:
         clearOutputWindow()

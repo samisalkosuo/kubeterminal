@@ -94,6 +94,33 @@ def getPodLabels(podName,namespace):
 
     return output
 
+def getTop(podName,namespace,cmdString,isAllNamespaces=False):
+    #cmd="kubectl top pods -n %s" % (podName, namespace)
+    cmd=None
+    if cmdString.find("-c") > -1:
+        #show top of selected pod and containers
+        cmd="kubectl top pod %s -n %s --containers" % (podName,namespace)
+
+    if cmdString.find("-n") > -1:
+        #show top of nodes
+        cmd="kubectl top nodes"
+
+    if cmdString.find("-l") > -1:
+        #show top of given labels
+        label=cmdString.split()[2]
+        cmd="kubectl top pod  -n %s -l %s" % (namespace,label)
+
+    if cmd == None:
+        if isAllNamespaces==True:
+            cmd="kubectl top pods --all-namespaces"
+        else:
+            cmd="kubectl top pods -n %s" % namespace
+    
+    output = executeCmd(cmd)
+
+    return output
+
+
 def execCmd(podName,namespace,command):
     cmd="kubectl exec " + podName
 

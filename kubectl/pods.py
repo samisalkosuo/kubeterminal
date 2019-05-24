@@ -1,5 +1,6 @@
 
-from .cmd import getNamespaces,getPods,describePod,logsPod,deletePod,getPodYaml,getPodJSON,execCmd,getPodLabels
+from .cmd import getNamespaces,getPods, describePod,logsPod,deletePod,getPodYaml,getPodJSON,execCmd
+from .cmd import getPodLabels,getTop
 from .nodes import getWorkerNodeNames
 
 def delete(podName,namespaceName,force):
@@ -24,6 +25,10 @@ def labels(podName,namespaceName):
     labelOutput.sort()
     labelOutput = "\n".join(labelOutput)
     return labelOutput
+
+def top(podName,namespaceName,cmdString,isAllNamespaces=False):
+    output = getTop(podName,namespaceName,cmdString,isAllNamespaces)
+    return output
 
 
 def exec(podName,namespaceName,command):
