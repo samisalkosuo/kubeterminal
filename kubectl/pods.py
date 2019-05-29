@@ -182,40 +182,44 @@ def podFieldsList(podsList):
 # Pretty Print table in tabular format
 # Original from: http://code.activestate.com/recipes/578801-pretty-print-table-in-tabular-format/
 def prettyPrint(table, justify = "R", columnWidth = 0):
+    
+    try:        
+        #get max column widths
+        defaultColumnWidth=15 #15 is length of IP address
+        def maxColumnWidth(columnIndex):
+            columnWidth=0
+            for row in table:
+                width = len(str(row[columnIndex]))
+                if width > columnWidth:
+                    columnWidth = width
+            return columnWidth
 
-    #get max column widths
-    defaultColumnWidth=15 #15 is length of IP address
-    def maxColumnWidth(columnIndex):
-        columnWidth=0
+        #all column widths
+        allWidths=[]
+        try:
+            for i in range(len(table[0])):
+                allWidths.append(maxColumnWidth(i))
+        except:
+            #if table is empty string, this will be catched
+            #and empty string is returned
+            return ""
+
+
+        outputStr = ""
         for row in table:
-            width = len(str(row[columnIndex]))
-            if width > columnWidth:
-                columnWidth = width
-        return columnWidth
-
-    #all column widths
-    allWidths=[]
-    try:
-        for i in range(len(table[0])):
-            allWidths.append(maxColumnWidth(i))
-    except:
-        #if table is empty string, this will be catched
-        #and empty string is returned
-        return ""
-
-
-    outputStr = ""
-    for row in table:
-        rowList = []
-        for i in range(len(row)):
-            col = row[i]
-        #for col in row:
-            columnWidth = allWidths[i]
-            if justify == "R": # justify right
-                rowList.append(str(col).rjust(columnWidth))
-            elif justify == "L": # justify left
-                rowList.append(str(col).ljust(columnWidth))
-            elif justify == "C": # justify center
-                rowList.append(str(col).center(columnWidth))
-        outputStr += '  '.join(rowList) + "\n"
+            rowList = []
+            for i in range(len(row)):
+                col = row[i]
+            #for col in row:
+                columnWidth = allWidths[i]
+                if justify == "R": # justify right
+                    rowList.append(str(col).rjust(columnWidth))
+                elif justify == "L": # justify left
+                    rowList.append(str(col).ljust(columnWidth))
+                elif justify == "C": # justify center
+                    rowList.append(str(col).center(columnWidth))
+            outputStr += '  '.join(rowList) + "\n"
+    except Exception as e:
+        s = str(e)
+        outputStr="%s\n%s" % (s,table)
     return outputStr
