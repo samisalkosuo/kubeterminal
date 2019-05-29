@@ -41,10 +41,16 @@ def updateState():
 
     if applicationState.current_namespace != selected_namespace:
         applicationState.current_namespace = selected_namespace
+        #reset position
+        state.cursor_line = -1
+
         updateUI("namespacepods")
 
     if applicationState.selected_node != selected_node:
         applicationState.selected_node = selected_node
+        #reset position
+        state.cursor_line = -1
+
         updateUI("nodepods")
 
 def updateUI(updateArea):
@@ -53,12 +59,18 @@ def updateUI(updateArea):
         appendToOutput(applicationState.selected_pod)
 
     if updateArea == "nodepods" or updateArea == "namespacepods":
+        moveToLine=state.cursor_line
         ns = applicationState.current_namespace
         podsList=pods.list(ns,applicationState.selected_node)
         podCount = len(podsList.split("\n"))
         title="%d Pods (ns: %s, nodes: %s)" % (podCount,ns, applicationState.selected_node)
         podListArea.text=podsList
         podListAreaFrame.title=title
+        if moveToLine > 0:
+            #if pod window cursor line was greater than 0 
+            #then move to that line
+            #appendToOutput("Should move to line: %d" % moveToLine)
+            podListArea.buffer.cursor_down(moveToLine)
 
 
 kb = KeyBindings()
@@ -136,15 +148,10 @@ upper_left_container = VSplit([namespaceWindowFrame,
                 #Window(height=1, char='-'),
                 nodeWindowFrame])
 
-#listens cursos changes in pods list
+#listens cursor changes in pods list
 def podListCursorChanged(buffer):
-    pass
-    #appendToOutput(buffer.document.current_line)
-    #from prompt_toolkit.application import get_app
-    #get_app().invalidate()
-    #updateUI("nodepods")
-    #print("jee: ",buffer.document.current_line)
-
+    #when position changes, save cursor position to state
+    state.cursor_line = buffer.document.cursor_position_row
 
 #pods window
 podListArea = TextArea(text="", 
@@ -322,7 +329,7 @@ Commands:
             force=True
         text=pods.delete(podName,namespace,force)
         cmdString = "delete pod %s" % podName
-        refreshUIAfterCmd = True
+        #refreshUIAfterCmd = True
 
     if cmdString.find("shell") == 0:
         shellCmd = cmdString.replace("shell","").strip()
