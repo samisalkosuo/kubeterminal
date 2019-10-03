@@ -267,6 +267,7 @@ Commands:
 - save [<filename>] - save Output-window contents to a file.
 - shell <any shell command> - executes any shell command.
 - top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
+- workers [-d] - get worker node resource allocation. Use -d to describe all worker nodes.
 - yaml - get YAML of currently selected pod.
 
 """
@@ -383,7 +384,19 @@ Commands:
         with open(filename, "w") as outputFile:
             outputFile.write(outputArea.text)
         text="Output saved to file '%s'." % filename
+
+
+    if cmdString.find("work") == 0:
+        #worker node statistics
+
+        params=[]
+        if cmdString.find("-d") > -1:
+           params.append("describe")
+ 
+        nodeStats = nodes.describeNodes("worker",params)
         
+        text=nodeStats
+
     if text != "":
         appendToOutput(text,cmdString=cmdString)
         #appendToOutput("\n".join([outputArea.text,text]),cmd=cmd)

@@ -159,6 +159,15 @@ def describeNode(nodeName):
     output = executeCmd(cmd)
     return output
 
+def getDescribeNodes(noderole=None):
+    #kubectl get nodes -l node-role.kubernetes.io/worker=true
+    cmd="kubectl describe nodes "
+    if noderole != None:
+       cmd = "%s -l node-role.kubernetes.io/%s=true" % (cmd,noderole)
+    output = executeCmd(cmd)
+    return output
+
+
 def getPods(namespace,nodeNameList=[]):
     cmd="kubectl get pods "
 

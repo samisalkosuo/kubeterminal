@@ -1,3 +1,7 @@
+== 0.10
+
+* Added workers-command to show worker node resource allocation.
+
 == 0.9
 
 * Cursor line in pods-windows is now remembered when refreshing pods.
