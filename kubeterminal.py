@@ -256,6 +256,7 @@ Key bindings
 Commands:
 
 - help - this help.
+- clip - copy Output-window contents to clipboard.
 - cls - clear Output-window.
 - delete [--force] - delete currently selected pod, optionally force delete.
 - describe <describe options> - show description of currently selected pod.
@@ -396,6 +397,12 @@ Commands:
         nodeStats = nodes.describeNodes("worker",params)
         
         text=nodeStats
+
+    if cmdString.find("clip") == 0:
+        #copy output window contents to clipboard
+        import pyperclip
+        pyperclip.copy(outputArea.text)
+        text="Output window contents copied to clipboard."
 
     if text != "":
         appendToOutput(text,cmdString=cmdString)

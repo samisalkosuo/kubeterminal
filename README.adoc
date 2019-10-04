@@ -29,6 +29,7 @@ image::kubeterminal_05.png[KubeTerminal_05,800]
 * Install prereqs:
 ** `pip install prompt-toolkit`
 ** `pip install ascii_graph`
+** `pip install pyperclip`
 * Install and configure kubectl.
 * Login to Kubernetes cluster before using KubeTerminal.
 * Start KubeTerminal:

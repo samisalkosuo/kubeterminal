@@ -1,3 +1,8 @@
+== 0.11
+
+* Added clip-command to copy Output-window contents to clipboard.
+
+
 == 0.10
 
 * Added workers-command to show worker node resource allocation.
