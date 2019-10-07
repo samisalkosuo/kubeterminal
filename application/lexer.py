@@ -1,9 +1,23 @@
 from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.styles.named_colors import NAMED_COLORS
-
+import re
 
 class PodStatusLexer(Lexer):
     
+    def allPodsRunning(self, line):
+        #return true if all pods are running (line shows 3/3, 1/1, etc.)
+        #return false if not all pods are running (line shows 2/3, 0/1, etc.)
+
+        matchObj = re.search( r'([0-9]+)/([0-9]+)', line)
+
+        if matchObj:
+            runningNow=int(matchObj.group(1))
+            runningTarget=int(matchObj.group(2))
+            return runningNow == runningTarget
+        else:
+           return False
+
+
     def lex_document(self, document):
         #colors = list(sorted(NAMED_COLORS, key=NAMED_COLORS.get))
         def get_line(lineno):
@@ -16,17 +30,15 @@ class PodStatusLexer(Lexer):
             if "Completed" in line:
                 return [(NAMED_COLORS["GreenYellow"],line)]
 
-            # if Running and 0/something => GreenYellow
-            if "Running" in line and "0/" in line:
+            #find out running status
+            #assume that line includes something like 2/2 or 1/1 or 1/3 
+            #to show how many pods are running 
+            if self.allPodsRunning(line) == False:
                 return [(NAMED_COLORS["Yellow"],line)]
 
-            if "0/" in line:
-                return [(NAMED_COLORS["Yellow"],line)]
-
-            #OK, green
+            #All appear to be running, green
             if "Running" in line:
                 return [(NAMED_COLORS["Green"],line)]
-
             
             #if document.current_line in line:
             #    return [(NAMED_COLORS["Black"],line)]
