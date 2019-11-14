@@ -3,6 +3,7 @@
 * Added ku-command to execute kubectl in selected namespace.
 * Added secret-command to get and view secrets.
 * Added cm-command to get and view configmaps.
+* Added --cert option to secret-command to show TLS certificate using openssl.
 
 == 0.12
 

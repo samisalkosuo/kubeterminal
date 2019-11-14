@@ -269,7 +269,7 @@ Commands:
 - labels - show labels of currently selected pod.
 - logs [-c <container_name>] - show logs of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.
-- secret [<secret-name>] [<key-name>] [--decode] - Get secrets in selected namespace. If first arg, then show yaml of given secret. If also second arg, then show value of given key. If --decode is present, value is base64 decoded.
+- secret [<secret-name>] [<key-name>] [--decode | --cert] - Get secrets in selected namespace. If first arg, then show yaml of given secret. If also second arg, then show value of given key. If --decode is present, value is base64 decoded. If --cert is present, value is assumed to be TLS certificate and openssl is used to decode it.
 - save [<filename>] - save Output-window contents to a file.
 - shell <any shell command> - executes any shell command.
 - top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
@@ -322,6 +322,7 @@ Commands:
             cmdString = "json " + podName
 
     doBase64decode = False
+    isCertificate = False
     if cmdString.find("secret") == 0 or cmdString.find("cm") == 0:
         kubeArg = "secret"
         if cmdString.find("cm")==0:
@@ -337,6 +338,9 @@ Commands:
             cmdString = "ku get %s %s -o jsonpath='{.data.%s}'" % (kubeArg, cmdStringList[1], jsonPath)
             if len(cmdStringList) == 4 and cmdStringList[3] == "--decode":
                 doBase64decode=True
+            if kubeArg == "secret" and len(cmdStringList) == 4 and cmdStringList[3] == "--cert":
+                doBase64decode=True
+                isCertificate = True
 
     if cmdString.find("ku") == 0:
         if isAllNamespaces() == True:
@@ -373,7 +377,20 @@ Commands:
         text = text.replace("'","")
         text = base64.b64decode(text)
         text = str(text,"utf8")
-        
+    
+    if isCertificate == True:
+        #text is assumed to be certificate and openssl tool is assumed to present
+        import subprocess,os
+        fName = ".cert.tmp"
+        certFile = open(fName,"w")
+        certFile.write(text)
+        certFile.close()
+        text = subprocess.check_output(["openssl", "x509", "-text", "-noout", 
+                                "-in", fName],stderr=subprocess.STDOUT,timeout=30)
+        text = str(text,'utf-8')
+        if os.path.exists(fName):
+            os.remove(fName)
+
     if cmdString.find("exec") == 0:
         (namespace,podName)=getPodNameAndNamespaceName()
         command = cmdString.replace("exec","").strip()
