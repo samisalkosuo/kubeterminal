@@ -14,6 +14,9 @@ Features include (and more planned):
 ** Get YAML and JSON descriptions.
 ** Get labels.
 * Execute command in a pod.
+* View congigmaps and secrets.
+** Decode base64 values.
+** Use openssl to view secret values that are TLS certificates.
 * Option for single executable, for easy installation.
 * Colors, if terminal supports them.
 
@@ -30,7 +33,8 @@ image::kubeterminal_05.png[KubeTerminal_05,800]
 ** `pip install prompt-toolkit`
 ** `pip install ascii_graph`
 ** `pip install pyperclip`
-* Install and configure kubectl.
+* Install and configure `kubectl`.
+** Install `openssl` in order to view certificates.
 * Login to Kubernetes cluster before using KubeTerminal.
 * Start KubeTerminal:
 **  `python3.7 kubeterminal.py`
