@@ -1,4 +1,5 @@
 import datetime
+import base64
 
 from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
@@ -233,6 +234,7 @@ def commandHander(buffer):
 def executeCommand(cmdString):
     refreshUIAfterCmd = False
     text=""
+    cmdcmdString = cmdString.strip()
     if cmdString == "":
         return
 
@@ -258,6 +260,7 @@ Commands:
 - help - this help.
 - clip - copy Output-window contents to clipboard.
 - cls - clear Output-window.
+- cm [<configmap-name>] [<key-name>] [--decode] - Get configmaps in selected namespace. If first arg, then show yaml of given configmap. If also second arg, then show value of given key. If --decode is present, value is base64 decoded.
 - delete [--force] - delete currently selected pod, optionally force delete.
 - describe <describe options> - show description of currently selected pod.
 - exec [-c <container_name>] <command> - exec command in currently selected pod.
@@ -266,6 +269,7 @@ Commands:
 - labels - show labels of currently selected pod.
 - logs [-c <container_name>] - show logs of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.
+- secret [<secret-name>] [<key-name>] [--decode] - Get secrets in selected namespace. If first arg, then show yaml of given secret. If also second arg, then show value of given key. If --decode is present, value is base64 decoded.
 - save [<filename>] - save Output-window contents to a file.
 - shell <any shell command> - executes any shell command.
 - top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
@@ -317,13 +321,29 @@ Commands:
             text=pods.json(podName,namespace) 
             cmdString = "json " + podName
 
+    doBase64decode = False
+    if cmdString.find("secret") == 0 or cmdString.find("cm") == 0:
+        kubeArg = "secret"
+        if cmdString.find("cm")==0:
+            kubeArg = "cm"
+        cmdStringList = cmdString.split()
+        if len(cmdStringList) == 1:
+            cmdString = "ku get %s" % kubeArg
+        elif len(cmdStringList) == 2:
+            cmdString = "ku get %s %s -o yaml" % (kubeArg, cmdStringList[1])
+        elif len(cmdStringList) >=3:
+            jsonPath = cmdStringList[2]
+            jsonPath = jsonPath.replace(".","\\.")
+            cmdString = "ku get %s %s -o jsonpath='{.data.%s}'" % (kubeArg, cmdStringList[1], jsonPath)
+            if len(cmdStringList) == 4 and cmdStringList[3] == "--decode":
+                doBase64decode=True
+
     if cmdString.find("ku") == 0:
         if isAllNamespaces() == True:
             namespace=""
         else:
             (namespace,podName)=getPodNameAndNamespaceName()
-            namespace = " -n %s" % namespace
-        
+            namespace = " -n %s" % namespace        
         kuArgs = cmdString[2:]
         cmdString  = "shell kubectl%s %s" % (namespace, kuArgs.strip())
 
@@ -348,6 +368,12 @@ Commands:
         shellCmd = cmdString.replace("shell","").strip()
         text=cmd.executeCmd(shellCmd)
 
+    if doBase64decode == True:
+        #text is assumed to hold base64 string, from secret or cm command
+        text = text.replace("'","")
+        text = base64.b64decode(text)
+        text = str(text,"utf8")
+        
     if cmdString.find("exec") == 0:
         (namespace,podName)=getPodNameAndNamespaceName()
         command = cmdString.replace("exec","").strip()
