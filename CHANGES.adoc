@@ -1,3 +1,7 @@
+== 0.13
+
+* Added ku-command to execute kubectl in selected namespace.
+
 == 0.12
 
 * Pod status is now yellow if not all containers are running.

@@ -262,6 +262,7 @@ Commands:
 - describe <describe options> - show description of currently selected pod.
 - exec [-c <container_name>] <command> - exec command in currently selected pod.
 - json - get JSON of currently selected pod.
+- ku <cmds/opts/args> - execute kubectl in currently selected namespace.
 - labels - show labels of currently selected pod.
 - logs [-c <container_name>] - show logs of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.
@@ -315,6 +316,16 @@ Commands:
         if namespace!="" and podName != "":
             text=pods.json(podName,namespace) 
             cmdString = "json " + podName
+
+    if cmdString.find("ku") == 0:
+        if isAllNamespaces() == True:
+            namespace=""
+        else:
+            (namespace,podName)=getPodNameAndNamespaceName()
+            namespace = " -n %s" % namespace
+        
+        kuArgs = cmdString[2:]
+        cmdString  = "shell kubectl%s %s" % (namespace, kuArgs.strip())
 
     if cmdString.find("node") == 0:
         selectedNode=applicationState.selected_node
