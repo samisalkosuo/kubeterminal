@@ -1,3 +1,8 @@
+== 0.14
+
+* Shows namespace, node and pod in command window title.
+* Added the first command line argument to not show dynamic title.
+
 == 0.13
 
 * Added ku-command to execute kubectl in selected namespace.

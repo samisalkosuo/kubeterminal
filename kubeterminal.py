@@ -1,6 +1,7 @@
 import datetime
 import base64
 import re
+import argparse 
 
 from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
@@ -21,6 +22,11 @@ from prompt_toolkit.filters import to_filter
 from kubectl import namespaces,pods,nodes
 from application import state,lexer
 from kubectl import cmd 
+
+#CLI args
+parser = argparse.ArgumentParser()
+parser.add_argument('--no-dynamic-title', action="store_true", help='Do not set command window title to show NS, node and pod.')
+args = parser.parse_args()
 
 applicationState = state#state.State()
 
@@ -154,14 +160,16 @@ upper_left_container = VSplit([namespaceWindowFrame,
 def podListCursorChanged(buffer):
     #when position changes, save cursor position to state
     state.cursor_line = buffer.document.cursor_position_row
-    selected_namespace=namespaceWindow.current_value
-    selected_node=nodeListArea.current_value
-    selected_pod=str(podListArea.buffer.document.current_line).strip()
 
-    title = "NS: %s, NODE: %s, POD: %s" % (selected_namespace,selected_node,selected_pod)
-    title = title.replace("<none>", '')
-    title = re.sub(' +', ' ', title)
-    commandWindowFrame.title = title
+    if args.no_dynamic_title == False:
+        selected_namespace=namespaceWindow.current_value
+        selected_node=nodeListArea.current_value
+        selected_pod=str(podListArea.buffer.document.current_line).strip()
+
+        title = "NS: %s, NODE: %s, POD: %s" % (selected_namespace,selected_node,selected_pod)
+        title = title.replace("<none>", '')
+        title = re.sub(' +', ' ', title)
+        commandWindowFrame.title = title
 
 #pods window
 podListArea = TextArea(text="", 
