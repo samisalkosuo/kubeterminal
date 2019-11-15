@@ -295,6 +295,7 @@ Commands:
 - delete [--force] - delete currently selected pod, optionally force delete.
 - describe <describe options> - show description of currently selected pod.
 - exec [-c <container_name>] <command> - exec command in currently selected pod.
+- ingress [<ingress name>] - show ingresses in selected namespace. If name is given, show yaml of ingress.
 - json - get JSON of currently selected pod.
 - ku <cmds/opts/args> - execute kubectl in currently selected namespace.
 - labels - show labels of currently selected pod.
@@ -382,6 +383,19 @@ Commands:
             namespace = " -n %s" % namespace        
         kuArgs = cmdString[2:]
         cmdString  = "shell kubectl%s %s" % (namespace, kuArgs.strip())
+
+    if cmdString.find("ingress") == 0:
+        if isAllNamespaces() == True:
+            namespace=""
+        else:
+            (namespace,podName)=getPodNameAndNamespaceName()
+            namespace = " -n %s" % namespace        
+        kuCmd = "get ingress "
+        kuArgs = cmdString.split()
+        if len(kuArgs) > 1:
+            kuCmd = kuCmd + kuArgs[1] + " -o yaml"
+        cmdString  = "shell kubectl%s %s" % (namespace, kuCmd)
+
 
     if cmdString.find("svc") == 0:
         if isAllNamespaces() == True:

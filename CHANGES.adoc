@@ -4,6 +4,7 @@
 * Added the first command line argument to not show dynamic title.
 * Added command line arguments to set smaller window size.
 * Added svc-command to show services in selected namespace.
+* Added ingress-command to show ingresses in selected namespace.
 
 == 0.13
 
