@@ -26,7 +26,22 @@ from kubectl import cmd
 #CLI args
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-dynamic-title', action="store_true", help='Do not set command window title to show NS, node and pod.')
+parser.add_argument('--compact-windows', action="store_true", help='Set namespace, node and pod windows to more compact size.')
+parser.add_argument('--even-more-compact-windows', action="store_true", help='Set namespace, node and pod windows to more even more compact size.')
 args = parser.parse_args()
+
+
+namespaceWindowSize=27
+nodeWindowSize=53
+podListWindowSize=80
+if args.compact_windows == True:
+    namespaceWindowSize=20
+    nodeWindowSize=30
+    podListWindowSize=50
+if args.even_more_compact_windows == True:
+    namespaceWindowSize=20
+    nodeWindowSize=10
+    podListWindowSize=30
 
 applicationState = state#state.State()
 
@@ -145,11 +160,10 @@ def searchbuffer_(event):
 
 #content windows
 namespaceWindow = RadioList(namespaces.list())
-namespaceWindowFrame= Frame(namespaceWindow,title="Namespaces",height=8,width=27)
+namespaceWindowFrame= Frame(namespaceWindow,title="Namespaces",height=8,width=namespaceWindowSize)
 
 nodeListArea = RadioList(nodes.list())
-
-nodeWindowFrame= Frame(nodeListArea,title="Nodes",height=8,width=53)
+nodeWindowFrame= Frame(nodeListArea,title="Nodes",height=8,width=nodeWindowSize)
 
 upper_left_container = VSplit([namespaceWindowFrame, 
                 #HorizontalLine(),
@@ -183,7 +197,7 @@ podListArea = TextArea(text="",
 #add listener to cursor position changed
 podListArea.buffer.on_cursor_position_changed=Event(podListArea.buffer,podListCursorChanged)
 podListArea.window.cursorline = to_filter(True)
-podListAreaFrame = Frame(podListArea,title="Pods",width=80)
+podListAreaFrame = Frame(podListArea,title="Pods",width=podListWindowSize)
 
 left_container = HSplit([upper_left_container, 
                 #HorizontalLine(),
