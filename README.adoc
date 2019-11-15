@@ -14,7 +14,7 @@ Features include (and more planned):
 ** Get YAML and JSON descriptions.
 ** Get labels.
 * Execute command in a pod.
-* View congigmaps and secrets.
+* View configmaps and secrets.
 ** Decode base64 values.
 ** Use openssl to view secret values that are TLS certificates.
 * Option for single executable, for easy installation.
@@ -39,7 +39,6 @@ image::kubeterminal_05.png[KubeTerminal_05,800]
 * Start KubeTerminal:
 **  `python3.7 kubeterminal.py`
 * Basic commands:
-** help: &lt;ctrl-h>
 ** refresh pod list: &lt;ctrl-r>  
 ** tab: switch windows and refresh pod list
 ** use tab to go to Pods-window and:

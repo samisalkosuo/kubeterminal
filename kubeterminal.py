@@ -27,7 +27,7 @@ from kubectl import cmd
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-dynamic-title', action="store_true", help='Do not set command window title to show NS, node and pod.')
 parser.add_argument('--compact-windows', action="store_true", help='Set namespace, node and pod windows to more compact size.')
-parser.add_argument('--even-more-compact-windows', action="store_true", help='Set namespace, node and pod windows to more even more compact size.')
+parser.add_argument('--even-more-compact-windows', action="store_true", help='Set namespace, node and pod windows to even more compact size.')
 args = parser.parse_args()
 
 
