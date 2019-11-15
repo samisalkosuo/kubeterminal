@@ -1,5 +1,6 @@
 import datetime
 import base64
+import re
 
 from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
@@ -153,6 +154,14 @@ upper_left_container = VSplit([namespaceWindowFrame,
 def podListCursorChanged(buffer):
     #when position changes, save cursor position to state
     state.cursor_line = buffer.document.cursor_position_row
+    selected_namespace=namespaceWindow.current_value
+    selected_node=nodeListArea.current_value
+    selected_pod=str(podListArea.buffer.document.current_line).strip()
+
+    title = "NS: %s, NODE: %s, POD: %s" % (selected_namespace,selected_node,selected_pod)
+    title = title.replace("<none>", '')
+    title = re.sub(' +', ' ', title)
+    commandWindowFrame.title = title
 
 #pods window
 podListArea = TextArea(text="", 
