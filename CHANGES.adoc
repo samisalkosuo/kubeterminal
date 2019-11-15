@@ -2,6 +2,8 @@
 
 * Shows namespace, node and pod in command window title.
 * Added the first command line argument to not show dynamic title.
+* Added command line arguments to set smaller window size.
+* Added svc-command to show services in selected namespace.
 
 == 0.13
 

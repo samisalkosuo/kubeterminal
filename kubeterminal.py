@@ -291,7 +291,7 @@ Commands:
 - help - this help.
 - clip - copy Output-window contents to clipboard.
 - cls - clear Output-window.
-- cm [<configmap-name>] [<key-name>] [--decode] - Get configmaps in selected namespace. If first arg, then show yaml of given configmap. If also second arg, then show value of given key. If --decode is present, value is base64 decoded.
+- cm [<configmap-name>] [<key-name>] [--decode] - get configmaps in selected namespace. If first arg, then show yaml of given configmap. If also second arg, then show value of given key. If --decode is present, value is base64 decoded.
 - delete [--force] - delete currently selected pod, optionally force delete.
 - describe <describe options> - show description of currently selected pod.
 - exec [-c <container_name>] <command> - exec command in currently selected pod.
@@ -300,9 +300,10 @@ Commands:
 - labels - show labels of currently selected pod.
 - logs [-c <container_name>] - show logs of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.
-- secret [<secret-name>] [<key-name>] [--decode | --cert] - Get secrets in selected namespace. If first arg, then show yaml of given secret. If also second arg, then show value of given key. If --decode is present, value is base64 decoded. If --cert is present, value is assumed to be TLS certificate and openssl is used to decode it.
+- secret [<secret-name>] [<key-name>] [--decode | --cert] - get secrets in selected namespace. If first arg, then show yaml of given secret. If also second arg, then show value of given key. If --decode is present, value is base64 decoded. If --cert is present, value is assumed to be TLS certificate and openssl is used to decode it.
 - save [<filename>] - save Output-window contents to a file.
 - shell <any shell command> - executes any shell command.
+- svc [nodeport | <service name>] - show services in selected namespace. If nodeport, shows only NodePort services. If service name, shows yaml of the service.
 - top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
 - workers [-d] - get worker node resource allocation. Use -d to describe all worker nodes.
 - yaml - get YAML of currently selected pod.
@@ -381,6 +382,23 @@ Commands:
             namespace = " -n %s" % namespace        
         kuArgs = cmdString[2:]
         cmdString  = "shell kubectl%s %s" % (namespace, kuArgs.strip())
+
+    if cmdString.find("svc") == 0:
+        if isAllNamespaces() == True:
+            namespace=""
+        else:
+            (namespace,podName)=getPodNameAndNamespaceName()
+            namespace = " -n %s" % namespace        
+        kuCmd = "get services "
+        kuArgs = cmdString.split()
+        if len(kuArgs) > 1:
+            if kuArgs[1] == "nodeport":
+                #show only nodeports
+                kuCmd = kuCmd + " | grep NodePort"
+            else:
+                kuCmd = kuCmd + kuArgs[1] + " -o yaml"
+        cmdString  = "shell kubectl%s %s" % (namespace, kuCmd)
+
 
     if cmdString.find("node") == 0:
         selectedNode=applicationState.selected_node
