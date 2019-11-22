@@ -36,6 +36,9 @@ class PodStatusLexer(Lexer):
         if "Running" in line:
             return [(NAMED_COLORS["Green"],line)]
 
+        #unknown, yellow
+        return [(NAMED_COLORS["Yellow"],line)]
+
     def svcWindowColors(self,line):
         
         if "NodePort" in line:
