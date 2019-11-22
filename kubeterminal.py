@@ -319,9 +319,11 @@ Key bindings
 Commands:
 
 - help - this help.
+- cert <data key> - show certificate of secret value using openssl.
 - clip - copy Output-window contents to clipboard.
 - cls - clear Output-window.
 - cm [<configmap-name>] [<key-name>] [--decode] - get configmaps in selected namespace. If first arg, then show yaml of given configmap. If also second arg, then show value of given key. If --decode is present, value is base64 decoded.
+- decode <data key> - decode base64 encoded secret or configmap value.
 - delete [--force] - delete currently selected pod, optionally force delete.
 - describe <describe options> - show description of currently selected pod.
 - exec [-c <container_name>] <command> - exec command in currently selected pod.
