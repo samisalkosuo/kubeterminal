@@ -387,7 +387,13 @@ Commands:
             if namespace!="" and resourceName != "":
                 options=cmdString.replace("logs","")
                 cmdString = "logs " + resourceName
-                text=pods.logs(resourceName,namespace,options)
+                text=pods.logs(resourceName,namespace,options)                
+                index = text.find("choose one of: [")
+                if index > -1:
+                    text1 = text[0:index]
+                    text2 = text[index:]
+                    text2 = text2.replace("choose one of: [","choose one of:\n[")
+                    text = "%s\n\n%s" % (text1, text2)
         else:
             text = "ERROR: Logs are available only for pods."
 
