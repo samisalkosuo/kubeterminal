@@ -393,7 +393,7 @@ Commands:
                     text1 = text[0:index]
                     text2 = text[index:]
                     text2 = text2.replace("choose one of: [","choose one of:\n[")
-                    text = "%s\n\n%s" % (text1, text2)
+                    text = "%s\n%s" % (text1, text2)
         else:
             text = "ERROR: Logs are available only for pods."
 

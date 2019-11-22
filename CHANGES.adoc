@@ -1,3 +1,7 @@
+== 0.16
+
+* Refactoring.
+
 == 0.15
 
 * Added ctrl-y shortcut to show YAML.
