@@ -304,7 +304,7 @@ def executeCommand(cmdString):
 Helper tool for Kubernetes.
 
 This output window shows output of commands.
-"Selected pod" is the pod where cursor is in the Pods window.
+"Selected pod/resource" is the resource where cursor is in the Resources window.
 
 Key bindings
 
@@ -325,10 +325,10 @@ Commands:
 - cm [<configmap-name>] [<key-name>] [--decode] - get configmaps in selected namespace. If first arg, then show yaml of given configmap. If also second arg, then show value of given key. If --decode is present, value is base64 decoded.
 - decode <data key> - decode base64 encoded secret or configmap value.
 - delete [--force] - delete currently selected pod, optionally force delete.
-- describe <describe options> - show description of currently selected pod.
+- describe <describe options> - show description of currently selected resource.
 - exec [-c <container_name>] <command> - exec command in currently selected pod.
 - ingress [<ingress name>] - show ingresses in selected namespace. If name is given, show yaml of ingress.
-- json - get JSON of currently selected pod.
+- json - get JSON of currently selected resource.
 - ku <cmds/opts/args> - execute kubectl in currently selected namespace.
 - labels - show labels of currently selected pod.
 - logs [-c <container_name>] - show logs of currently selected pod.
@@ -340,22 +340,22 @@ Commands:
 - top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
 - window [pod | svc | cm | secret] - Set resource type for window.
 - workers [-d] - get worker node resource allocation. Use -d to describe all worker nodes.
-- yaml - get YAML of currently selected pod.
+- yaml - get YAML of currently selected resource.
 
 """
-    def getPodNameAndNamespaceName():
+    def getResourceNameAndNamespaceName():
         podLine = applicationState.selected_pod
         namespace=""
-        podName=""
+        resourceName=""
         if podLine != "":
             fields=podLine.split()
             if applicationState.current_namespace == "all-namespaces":
-                podName=fields[1]
+                resourceName=fields[1]
                 namespace=fields[0]
             else:
-                podName=fields[0]
+                resourceName=fields[0]
                 namespace=applicationState.current_namespace
-        return (namespace,podName)
+        return (namespace,resourceName)
 
     def isAllNamespaces():
         return applicationState.current_namespace == "all-namespaces"
@@ -380,33 +380,30 @@ Commands:
 
         return commandString
 
+    (namespace,resourceName)=getResourceNameAndNamespaceName()
+
     if cmdString.find("logs") == 0:
         if applicationState.content_mode == globals.WINDOW_POD:
-            (namespace,podName)=getPodNameAndNamespaceName()
-            if namespace!="" and podName != "":
+            if namespace!="" and resourceName != "":
                 options=cmdString.replace("logs","")
-                cmdString = "logs " + podName
-                text=pods.logs(podName,namespace,options)
+                cmdString = "logs " + resourceName
+                text=pods.logs(resourceName,namespace,options)
         else:
             text = "ERROR: Logs are available only for pods."
 
     if cmdString.find("describe") == 0:
-        (namespace,podName)=getPodNameAndNamespaceName()
-        cmdString = getCmdString("describe",podName)
+        cmdString = getCmdString("describe",resourceName)
 
     if cmdString.find("yaml") == 0:
-        (namespace,podName)=getPodNameAndNamespaceName()
-        cmdString = getCmdString("yaml",podName)
+        cmdString = getCmdString("yaml",resourceName)
 
     if cmdString.find("json") == 0:
-        (namespace,podName)=getPodNameAndNamespaceName()
-        cmdString = getCmdString("json",podName)
+        cmdString = getCmdString("json",resourceName)
 
     if cmdString.find("label") == 0:
         if applicationState.content_mode == globals.WINDOW_POD:
-            (namespace,podName)=getPodNameAndNamespaceName()
-            cmdString = "labels %s" % (podName)
-            text=pods.labels(podName,namespace)
+            cmdString = "labels %s" % (resourceName)
+            text=pods.labels(resourceName,namespace)
         else:
             text = "ERROR: Labels are currently available only for pods."
 
@@ -414,7 +411,6 @@ Commands:
         if applicationState.content_mode == globals.WINDOW_SECRET or applicationState.content_mode == globals.WINDOW_CM:
             cmdArgs = cmdString.split()
             if len(cmdArgs) > 1:
-                (namespace,resourceName)=getPodNameAndNamespaceName()
                 key = cmdArgs[1]
                 cmdString =""
                 if applicationState.content_mode == globals.WINDOW_SECRET:
@@ -431,7 +427,6 @@ Commands:
         if applicationState.content_mode == globals.WINDOW_SECRET:
             cmdArgs = cmdString.split()
             if len(cmdArgs) > 1:
-                (namespace,resourceName)=getPodNameAndNamespaceName()
                 key = cmdArgs[1]
                 cmdString = "secret %s %s --cert " % (resourceName, key)
             else:
@@ -465,7 +460,6 @@ Commands:
         if isAllNamespaces() == True:
             namespace=""
         else:
-            (namespace,podName)=getPodNameAndNamespaceName()
             namespace = " -n %s" % namespace        
         kuArgs = cmdString[2:]
         cmdString  = "shell kubectl%s %s" % (namespace, kuArgs.strip())
@@ -474,7 +468,6 @@ Commands:
         if isAllNamespaces() == True:
             namespace=""
         else:
-            (namespace,podName)=getPodNameAndNamespaceName()
             namespace = " -n %s" % namespace        
         kuCmd = "get ingress "
         kuArgs = cmdString.split()
@@ -487,7 +480,6 @@ Commands:
         if isAllNamespaces() == True:
             namespace=""
         else:
-            (namespace,podName)=getPodNameAndNamespaceName()
             namespace = " -n %s" % namespace        
         kuCmd = "get services "
         kuArgs = cmdString.split()
@@ -509,13 +501,15 @@ Commands:
         cmdString = "describe node %s " % options
 
     if cmdString.find("delete") == 0:
-        (namespace,podName)=getPodNameAndNamespaceName()
-        force=False
-        if (cmdString.find("--force") > -1):
-            force=True
-        text=pods.delete(podName,namespace,force)
-        cmdString = "delete pod %s" % podName
-        #refreshUIAfterCmd = True
+        if applicationState.content_mode == globals.WINDOW_POD:
+            force=False
+            if (cmdString.find("--force") > -1):
+                force=True
+            text=pods.delete(resourceName,namespace,force)
+            cmdString = "delete pod %s" % resourceName
+            #refreshUIAfterCmd = True
+        else:
+            text = "ERROR: delete is available only for pods."
 
     if cmdString.find("shell") == 0:
         shellCmd = cmdString.replace("shell","").strip()
@@ -541,19 +535,20 @@ Commands:
             os.remove(fName)
 
     if cmdString.find("exec") == 0:
-        (namespace,podName)=getPodNameAndNamespaceName()
-        command = cmdString.replace("exec","").strip()
-        cmdString = "exec %s %s" % (podName,command)
-        text=pods.exec(podName,namespace,command)
+        if applicationState.content_mode == globals.WINDOW_POD:
+            command = cmdString.replace("exec","").strip()
+            cmdString = "exec %s %s" % (resourceName,command)
+            text=pods.exec(resourceName,namespace,command)
+        else:
+            text = "ERROR: exec is available only for pods."
 
 
     if cmdString.find("top") == 0:
-        (namespace,podName)=getPodNameAndNamespaceName()
         topCmd=cmdString
         if cmdString.find("-l") > -1:
             cmdString = cmdString.replace("-l","label")
         if cmdString.find("-c") > -1:
-            cmdString = "top pod %s" % (podName)
+            cmdString = "top pod %s" % (resourceName)
         if cmdString.find("-n") > -1:
             cmdString = "top nodes"
         
@@ -563,7 +558,7 @@ Commands:
             topCmd = topCmd.replace("-g","")
 
         
-        text=pods.top(podName,namespace,topCmd,isAllNamespaces(),doAsciiGraph)
+        text=pods.top(resourceName,namespace,topCmd,isAllNamespaces(),doAsciiGraph)
 
     if cmdString.find("cls") == 0:
         clearOutputWindow()
