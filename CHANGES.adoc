@@ -1,3 +1,12 @@
+== 0.15
+
+* Added ctrl-y shortcut to show YAML.
+* Added window-command to set resource type (pod, svc, cm, secret) to show in window.
+* yaml, json, describe commands show selected resource type.
+* Added decode-command to decode base64 value in secret and config map.
+* Added cert-command to show certificate using openssl.
+* Refactoring.
+
 == 0.14
 
 * Shows namespace, node and pod in command window title.

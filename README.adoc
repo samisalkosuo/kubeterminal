@@ -9,6 +9,7 @@ Features include (and more planned):
 
 * Uses the shell and kubectl-command.
 * List pods in namespace and/or node.
+* List services, secrets and other resources in namespace.
 * See pod logs.
 * Describe pods.
 ** Get YAML and JSON descriptions.

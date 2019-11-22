@@ -89,7 +89,9 @@ def getPodJSON(podName,namespace):
     return output
 
 def getPodLabels(podName,namespace):
-    cmd="kubectl get pod %s -n %s --show-labels" % (podName, namespace)
+    resourceType = "pod"
+
+    cmd="kubectl get %s %s -n %s --show-labels" % (resourceType, podName, namespace)
     output = executeCmd(cmd)
 
     return output
@@ -199,3 +201,36 @@ def getNamespaces():
         if len(fields) > 0:
             namespaces.append(fields[0])
     return namespaces
+
+def getServices(namespace):
+    contentList=[]
+    output = executeCmd("kubectl -n %s get svc --no-headers" % (namespace))
+    for line in output.split('\n'):
+        if len(line.split()) > 0:
+            contentList.append(line)
+    #    fields = line.split()
+    #    if len(fields) > 0:
+    #        services.append(fields[0])
+    return contentList
+
+def getConfigMaps(namespace):
+    contentList=[]
+    output = executeCmd("kubectl -n %s get cm --no-headers" % (namespace))
+    for line in output.split('\n'):
+        if len(line.split()) > 0:
+            contentList.append(line)
+    #    fields = line.split()
+    #    if len(fields) > 0:
+    #        services.append(fields[0])
+    return contentList
+
+def getSecrets(namespace):
+    contentList=[]
+    output = executeCmd("kubectl -n %s get secrets --no-headers" % (namespace))
+    for line in output.split('\n'):
+        if len(line.split()) > 0:
+            contentList.append(line)
+    #    fields = line.split()
+    #    if len(fields) > 0:
+    #        services.append(fields[0])
+    return contentList

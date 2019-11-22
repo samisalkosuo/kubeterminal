@@ -1,6 +1,7 @@
 from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.styles.named_colors import NAMED_COLORS
 import re
+import application.globals as globals
 
 class PodStatusLexer(Lexer):
     
@@ -17,29 +18,62 @@ class PodStatusLexer(Lexer):
         else:
            return False
 
+    def podWindowColors(self,line):
+        #error, red
+        if "CrashLoopBackOff" in line or "Terminating" in line:
+            return [(NAMED_COLORS["Red"],line)]
+
+        if "Completed" in line:
+            return [(NAMED_COLORS["GreenYellow"],line)]
+
+        #find out running status
+        #assume that line includes something like 2/2 or 1/1 or 1/3 
+        #to show how many pods are running 
+        if self.allPodsRunning(line) == False:
+            return [(NAMED_COLORS["Yellow"],line)]
+
+        #All appear to be running, green
+        if "Running" in line:
+            return [(NAMED_COLORS["Green"],line)]
+
+    def svcWindowColors(self,line):
+        
+        if "NodePort" in line:
+            return [(NAMED_COLORS["GreenYellow"],line)]
+
+        #default green
+        return [(NAMED_COLORS["Green"],line)]
+
+
+    def cmWindowColors(self,line):
+        
+        #default green
+        return [(NAMED_COLORS["Green"],line)]
+
+    def secretWindowColors(self,line):
+        
+        #default green
+        return [(NAMED_COLORS["Green"],line)]
 
     def lex_document(self, document):
         #colors = list(sorted(NAMED_COLORS, key=NAMED_COLORS.get))
         def get_line(lineno):
             line = document.lines[lineno]
 
-            #error, red
-            if "CrashLoopBackOff" in line or "Terminating" in line:
-                return [(NAMED_COLORS["Red"],line)]
+            #import content mode
+            from .state import content_mode
+            if content_mode == globals.WINDOW_POD:
+                return self.podWindowColors(line)
 
-            if "Completed" in line:
-                return [(NAMED_COLORS["GreenYellow"],line)]
+            if content_mode == globals.WINDOW_SVC:
+                return self.svcWindowColors(line)
 
-            #find out running status
-            #assume that line includes something like 2/2 or 1/1 or 1/3 
-            #to show how many pods are running 
-            if self.allPodsRunning(line) == False:
-                return [(NAMED_COLORS["Yellow"],line)]
+            if content_mode == globals.WINDOW_CM:
+                return self.cmWindowColors(line)
 
-            #All appear to be running, green
-            if "Running" in line:
-                return [(NAMED_COLORS["Green"],line)]
-            
+            if content_mode == globals.WINDOW_SECRET:
+                return self.secretWindowColors(line)
+
             #if document.current_line in line:
             #    return [(NAMED_COLORS["Black"],line)]
 
@@ -63,7 +97,7 @@ class OutputAreaLexer(Lexer):
                     return [(NAMED_COLORS["Yellow"],line)]
 
                 #TODO: some kind of configuration for error lines
-                if lowerLine.find(" error ") > 0 or lowerLine.find(" error") > 0 or lowerLine.find("exception: ")>0:
+                if lowerLine.startswith("error:") or lowerLine.find(" error ") > 0 or lowerLine.find(" error") > 0 or lowerLine.find("exception: ")>0:
                     return [(NAMED_COLORS["Red"],line)]
 
                 return [(defaultColor,line)]

@@ -7,6 +7,7 @@ selected_pod=""
 selected_node="all"
 searchString=""
 cursor_line=0
+content_mode=""
 
 class State(object):
 

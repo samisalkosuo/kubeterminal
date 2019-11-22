@@ -2,6 +2,7 @@ import datetime
 import base64
 import re
 import argparse 
+import os
 
 from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
@@ -19,9 +20,10 @@ from prompt_toolkit.shortcuts import yes_no_dialog
 from prompt_toolkit.utils import Event
 from prompt_toolkit.filters import to_filter
 
-from kubectl import namespaces,pods,nodes
+from kubectl import namespaces,pods,nodes,windowCmd
 from application import state,lexer
 from kubectl import cmd 
+from application import globals
 
 #CLI args
 parser = argparse.ArgumentParser()
@@ -30,6 +32,9 @@ parser.add_argument('--compact-windows', action="store_true", help='Set namespac
 parser.add_argument('--even-more-compact-windows', action="store_true", help='Set namespace, node and pod windows to even more compact size.')
 args = parser.parse_args()
 
+applicationState = state#state.State()
+
+applicationState.content_mode=globals.WINDOW_POD
 
 namespaceWindowSize=27
 nodeWindowSize=53
@@ -43,7 +48,6 @@ if args.even_more_compact_windows == True:
     nodeWindowSize=10
     podListWindowSize=30
 
-applicationState = state#state.State()
 
 enableMouseSupport = False
 enableScrollbar = False
@@ -84,11 +88,19 @@ def updateUI(updateArea):
     if updateArea == "nodepods" or updateArea == "namespacepods":
         moveToLine=state.cursor_line
         ns = applicationState.current_namespace
-        podsList=pods.list(ns,applicationState.selected_node)
-        podCount = len(podsList.split("\n"))
-        title="%d Pods (ns: %s, nodes: %s)" % (podCount,ns, applicationState.selected_node)
-        podListArea.text=podsList
+        contentList = ""
+        title = ""
+        if applicationState.content_mode == globals.WINDOW_POD:
+            (contentList,title) = windowCmd.getPods(ns,applicationState.selected_node)
+        if applicationState.content_mode == globals.WINDOW_SVC:
+            (contentList,title) = windowCmd.getServiceList(ns)
+        if applicationState.content_mode == globals.WINDOW_CM:
+            (contentList,title) = windowCmd.getConfigMapList(ns)
+        if applicationState.content_mode == globals.WINDOW_SECRET:
+            (contentList,title) = windowCmd.getSecretList(ns)
+        podListArea.text=contentList
         podListAreaFrame.title=title
+        setCommandWindowTitle()
         if moveToLine > 0:
             #if pod window cursor line was greater than 0 
             #then move to that line
@@ -125,6 +137,11 @@ def exit_(event):
 def describepod_(event):
     applicationState.selected_pod=str(podListArea.buffer.document.current_line).strip()
     executeCommand("describe")
+
+@kb.add('c-y')
+def yamlResource_(event):
+    applicationState.selected_pod=str(podListArea.buffer.document.current_line).strip()
+    executeCommand("yaml")
 
 @kb.add('c-l')
 def logspod_(event):
@@ -170,20 +187,32 @@ upper_left_container = VSplit([namespaceWindowFrame,
                 #Window(height=1, char='-'),
                 nodeWindowFrame])
 
+def setCommandWindowTitle():
+    selected_namespace=namespaceWindow.current_value
+    selected_node=nodeListArea.current_value
+    selected_pod=str(podListArea.buffer.document.current_line).strip()
+
+    title = ""
+    if applicationState.content_mode == globals.WINDOW_POD:
+        title = "NS: %s, NODE: %s, POD: %s" % (selected_namespace,selected_node,selected_pod)
+    if applicationState.content_mode == globals.WINDOW_SVC:
+        title = "NS: %s, SERVICE: %s" % (selected_namespace,selected_pod)
+    if applicationState.content_mode == globals.WINDOW_CM:
+        title = "NS: %s, CONFIGMAP: %s" % (selected_namespace,selected_pod)
+    if applicationState.content_mode == globals.WINDOW_SECRET:
+        title = "NS: %s, SECRET: %s" % (selected_namespace,selected_pod)
+
+    title = title.replace("<none>", '')
+    title = re.sub(' +', ' ', title)
+    commandWindowFrame.title = title
+
 #listens cursor changes in pods list
 def podListCursorChanged(buffer):
     #when position changes, save cursor position to state
     state.cursor_line = buffer.document.cursor_position_row
 
     if args.no_dynamic_title == False:
-        selected_namespace=namespaceWindow.current_value
-        selected_node=nodeListArea.current_value
-        selected_pod=str(podListArea.buffer.document.current_line).strip()
-
-        title = "NS: %s, NODE: %s, POD: %s" % (selected_namespace,selected_node,selected_pod)
-        title = title.replace("<none>", '')
-        title = re.sub(' +', ' ', title)
-        commandWindowFrame.title = title
+        setCommandWindowTitle()
 
 #pods window
 podListArea = TextArea(text="", 
@@ -281,8 +310,9 @@ Key bindings
 
 - ESC - exit program.
 - <ctrl-l>, show logs of currently selected pod (without any options).
-- <ctrl-d>, show description of currently selected pod (without any options).
-- <ctrl-r>, refresh pod list.
+- <ctrl-d>, show description of currently selected resource (without any options).
+- <ctrl-y>, show YAML of currently selected resource.
+- <ctrl-r>, refresh UI.
 - <shift-g>, to the end of Output-window buffer.
 - / -  search string in Output-window.
 
@@ -306,6 +336,7 @@ Commands:
 - shell <any shell command> - executes any shell command.
 - svc [nodeport | <service name>] - show services in selected namespace. If nodeport, shows only NodePort services. If service name, shows yaml of the service.
 - top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
+- window [pod | svc | cm | secret] - Set resource type for window.
 - workers [-d] - get worker node resource allocation. Use -d to describe all worker nodes.
 - yaml - get YAML of currently selected pod.
 
@@ -327,32 +358,85 @@ Commands:
     def isAllNamespaces():
         return applicationState.current_namespace == "all-namespaces"
 
+    def getCmdString(cmd, resource):
+        resourceType = ""
+        if applicationState.content_mode == globals.WINDOW_POD:
+            resourceType = "pod"
+        if applicationState.content_mode == globals.WINDOW_CM:
+            resourceType = "cm"
+        if applicationState.content_mode == globals.WINDOW_SVC:
+            resourceType = "svc"
+        if applicationState.content_mode == globals.WINDOW_SECRET:
+            resourceType = "secret"
+        
+        if cmd == "describe":
+            commandString ="ku describe %s %s" % (resourceType,resource)
+        if cmd == "yaml":
+            commandString ="ku get %s %s -o yaml" % (resourceType,resource)
+        if cmd == "json":
+            commandString ="ku get %s %s -o json" % (resourceType,resource)
+
+        return commandString
 
     if cmdString.find("logs") == 0:
-        (namespace,podName)=getPodNameAndNamespaceName()
-        if namespace!="" and podName != "":
-            options=cmdString.replace("logs","")
-            cmdString = "logs " + podName
-            text=pods.logs(podName,namespace,options)
+        if applicationState.content_mode == globals.WINDOW_POD:
+            (namespace,podName)=getPodNameAndNamespaceName()
+            if namespace!="" and podName != "":
+                options=cmdString.replace("logs","")
+                cmdString = "logs " + podName
+                text=pods.logs(podName,namespace,options)
+        else:
+            text = "ERROR: Logs are available only for pods."
 
     if cmdString.find("describe") == 0:
         (namespace,podName)=getPodNameAndNamespaceName()
-        if namespace!="" and podName != "":
-            options=cmdString.replace("describe","")
-            cmdString = "describe " + podName
-            text=pods.describe(podName,namespace,options) 
+        cmdString = getCmdString("describe",podName)
 
     if cmdString.find("yaml") == 0:
         (namespace,podName)=getPodNameAndNamespaceName()
-        if namespace!="" and podName != "":
-            text=pods.yaml(podName,namespace) 
-            cmdString = "yaml " + podName
+        cmdString = getCmdString("yaml",podName)
 
     if cmdString.find("json") == 0:
         (namespace,podName)=getPodNameAndNamespaceName()
-        if namespace!="" and podName != "":
-            text=pods.json(podName,namespace) 
-            cmdString = "json " + podName
+        cmdString = getCmdString("json",podName)
+
+    if cmdString.find("label") == 0:
+        if applicationState.content_mode == globals.WINDOW_POD:
+            (namespace,podName)=getPodNameAndNamespaceName()
+            cmdString = "labels %s" % (podName)
+            text=pods.labels(podName,namespace)
+        else:
+            text = "ERROR: Labels are currently available only for pods."
+
+    if cmdString.find("decode") == 0:
+        if applicationState.content_mode == globals.WINDOW_SECRET or applicationState.content_mode == globals.WINDOW_CM:
+            cmdArgs = cmdString.split()
+            if len(cmdArgs) > 1:
+                (namespace,resourceName)=getPodNameAndNamespaceName()
+                key = cmdArgs[1]
+                cmdString =""
+                if applicationState.content_mode == globals.WINDOW_SECRET:
+                    cmdString = "secret "
+                if applicationState.content_mode == globals.WINDOW_CM:
+                    cmdString = "cm "
+                cmdString = "%s %s %s --decode " % (cmdString,resourceName, key)
+            else:
+                text = "ERROR: No key name given."
+        else:
+            text = "ERROR: Decode available only for secrets and configmaps."
+
+    if cmdString.find("cert") == 0:
+        if applicationState.content_mode == globals.WINDOW_SECRET:
+            cmdArgs = cmdString.split()
+            if len(cmdArgs) > 1:
+                (namespace,resourceName)=getPodNameAndNamespaceName()
+                key = cmdArgs[1]
+                cmdString = "secret %s %s --cert " % (resourceName, key)
+            else:
+                text = "ERROR: No key name given."
+        else:
+            text = "ERROR: cert available only for secrets."
+
 
     doBase64decode = False
     isCertificate = False
@@ -460,10 +544,6 @@ Commands:
         cmdString = "exec %s %s" % (podName,command)
         text=pods.exec(podName,namespace,command)
 
-    if cmdString.find("label") == 0:
-        (namespace,podName)=getPodNameAndNamespaceName()
-        cmdString = "labels %s" % (podName)
-        text=pods.labels(podName,namespace)
 
     if cmdString.find("top") == 0:
         (namespace,podName)=getPodNameAndNamespaceName()
@@ -520,6 +600,18 @@ Commands:
         import pyperclip
         pyperclip.copy(outputArea.text)
         text="Output window contents copied to clipboard."
+
+    if cmdString.find("win") == 0:
+        #window command to select content for "pod"-window
+        cmdArgs = cmdString.split()
+        if len(cmdArgs) > 1:
+            applicationState.content_mode = "WINDOW_%s" % (cmdArgs[1].upper())
+            updateUI("namespacepods")
+        else:
+            text = "Available commands/Resource types:\n"
+            for resourceType in globals.WINDOW_LIST:
+                text="%swindow %s\n" % (text,resourceType.lower().replace("window_",""))
+
 
     if text != "":
         appendToOutput(text,cmdString=cmdString)
