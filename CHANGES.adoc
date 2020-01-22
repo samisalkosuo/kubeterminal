@@ -1,6 +1,7 @@
 == 0.16
 
 * Refactoring.
+* Bug fix when describing pods and showing all namespaces.
 
 == 0.15
 

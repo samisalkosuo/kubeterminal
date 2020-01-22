@@ -463,10 +463,7 @@ Commands:
                 isCertificate = True
 
     if cmdString.find("ku") == 0:
-        if isAllNamespaces() == True:
-            namespace=""
-        else:
-            namespace = " -n %s" % namespace        
+        namespace = " -n %s" % namespace        
         kuArgs = cmdString[2:]
         cmdString  = "shell kubectl%s %s" % (namespace, kuArgs.strip())
 
