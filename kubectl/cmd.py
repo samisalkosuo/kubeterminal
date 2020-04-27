@@ -3,6 +3,9 @@ import subprocess
 import threading
 import locale
 
+
+kubectlCommand = "kubectl"
+
 #execute kubectl commands
 def executeCmd(cmd):
     #TODO: if output is very long, this will hang until it is done
@@ -54,7 +57,7 @@ def executeBackgroudCmd(cmd):
     
 
 def deletePod(podName,namespace,force):
-    cmd="kubectl delete pod " + podName
+    cmd = kubectlCommand + " delete pod " + podName
     cmd=cmd + " -n " + namespace
     if (force == True):
         cmd=cmd + " --grace-period=0 --force"
@@ -63,13 +66,13 @@ def deletePod(podName,namespace,force):
 
 
 def describePod(podName,namespace,options):
-    cmd="kubectl describe pod " + podName
+    cmd = kubectlCommand + " describe pod " + podName
     cmd=cmd +" -n "+namespace +" "+ options
     output = executeCmd(cmd)
     return output
 
 def getPodYaml(podName,namespace):
-    cmd="kubectl get pod " + podName
+    cmd = kubectlCommand + " get pod " + podName
 
     cmd=cmd+" -n " + namespace
     cmd=cmd+" -o yaml "
@@ -79,7 +82,7 @@ def getPodYaml(podName,namespace):
     return output
 
 def getPodJSON(podName,namespace):
-    cmd="kubectl get pod " + podName
+    cmd = kubectlCommand + " get pod " + podName
 
     cmd=cmd+" -n " + namespace
     cmd=cmd+" -o json "
@@ -91,32 +94,31 @@ def getPodJSON(podName,namespace):
 def getPodLabels(podName,namespace):
     resourceType = "pod"
 
-    cmd="kubectl get %s %s -n %s --show-labels" % (resourceType, podName, namespace)
+    cmd = kubectlCommand + " get %s %s -n %s --show-labels" % (resourceType, podName, namespace)
     output = executeCmd(cmd)
 
     return output
 
 def getTop(podName,namespace,cmdString,isAllNamespaces=False):
-    #cmd="kubectl top pods -n %s" % (podName, namespace)
     cmd=None
     if cmdString.find("-c") > -1:
         #show top of selected pod and containers
-        cmd="kubectl top pod %s -n %s --containers" % (podName,namespace)
+        cmd = kubectlCommand + " top pod %s -n %s --containers" % (podName,namespace)
 
     if cmdString.find("-n") > -1:
         #show top of nodes
-        cmd="kubectl top nodes"
+        cmd = kubectlCommand + " top nodes"
 
     if cmdString.find("-l") > -1:
         #show top of given labels
         label=cmdString.split()[2]
-        cmd="kubectl top pod  -n %s -l %s" % (namespace,label)
+        cmd = kubectlCommand + " top pod  -n %s -l %s" % (namespace,label)
 
     if cmd == None:
         if isAllNamespaces==True:
-            cmd="kubectl top pods --all-namespaces"
+            cmd = kubectlCommand + " top pods --all-namespaces"
         else:
-            cmd="kubectl top pods -n %s" % namespace
+            cmd = kubectlCommand + " top pods -n %s" % namespace
     
     output = executeCmd(cmd)
 
@@ -124,7 +126,7 @@ def getTop(podName,namespace,cmdString,isAllNamespaces=False):
 
 
 def execCmd(podName,namespace,command):
-    cmd="kubectl exec " + podName
+    cmd = kubectlCommand + " exec " + podName
 
     cmd=cmd+" -n " + namespace
     if (command.find("-c")==0):
@@ -143,27 +145,25 @@ def execCmd(podName,namespace,command):
 
 
 def logsPod(podName,namespace,options):
-    cmd="kubectl logs " + podName
+    cmd = kubectlCommand + " logs " + podName
     cmd=cmd +" -n "+namespace +" "+options
     output = executeCmd(cmd)
     return output
 
 def getNodes(noderole=None):
-    #kubectl get nodes -l node-role.kubernetes.io/worker=true
-    cmd="kubectl get nodes "
+    cmd = kubectlCommand + " get nodes "
     if noderole != None:
        cmd = "%s -l node-role.kubernetes.io/%s=true" % (cmd,noderole)
     output = executeCmd(cmd+" --no-headers")
     return output
 
 def describeNode(nodeName):
-    cmd="kubectl describe node \"%s\" " % nodeName
+    cmd = kubectlCommand + " describe node \"%s\" " % nodeName
     output = executeCmd(cmd)
     return output
 
 def getDescribeNodes(noderole=None):
-    #kubectl get nodes -l node-role.kubernetes.io/worker=true
-    cmd="kubectl describe nodes "
+    cmd = kubectlCommand + " describe nodes "
     if noderole != None:
        cmd = "%s -l node-role.kubernetes.io/%s=true" % (cmd,noderole)
     output = executeCmd(cmd)
@@ -171,7 +171,7 @@ def getDescribeNodes(noderole=None):
 
 
 def getPods(namespace,nodeNameList=[]):
-    cmd="kubectl get pods "
+    cmd = kubectlCommand + " get pods "
 
     if namespace == "all-namespaces":
         cmd=cmd+"--"+namespace
@@ -183,7 +183,6 @@ def getPods(namespace,nodeNameList=[]):
     if nodeNameList != None and len(nodeNameList)>0:
         #get pods for specified nodes
         for nodeName in nodeNameList:
-            #kubectl get pods --all-namespaces  --no-headers --field-selector spec.nodeName=10.31.10.126    
             cmd2="%s --field-selector spec.nodeName=%s" % (cmd,nodeName)
             output2 = executeCmd(cmd2)
             if output2.lower().find("no resources found") == -1:
@@ -195,7 +194,7 @@ def getPods(namespace,nodeNameList=[]):
 
 def getNamespaces():
     namespaces=[]
-    output = executeCmd("kubectl get namespaces --no-headers")
+    output = executeCmd(kubectlCommand + " get namespaces --no-headers")
     for line in output.split('\n'):
         fields = line.split()
         if len(fields) > 0:
@@ -204,7 +203,7 @@ def getNamespaces():
 
 def getServices(namespace):
     contentList=[]
-    output = executeCmd("kubectl -n %s get svc --no-headers" % (namespace))
+    output = executeCmd(kubectlCommand + " -n %s get svc --no-headers" % (namespace))
     for line in output.split('\n'):
         if len(line.split()) > 0:
             contentList.append(line)
@@ -215,7 +214,7 @@ def getServices(namespace):
 
 def getConfigMaps(namespace):
     contentList=[]
-    output = executeCmd("kubectl -n %s get cm --no-headers" % (namespace))
+    output = executeCmd(kubectlCommand + " -n %s get cm --no-headers" % (namespace))
     for line in output.split('\n'):
         if len(line.split()) > 0:
             contentList.append(line)
@@ -226,7 +225,7 @@ def getConfigMaps(namespace):
 
 def getSecrets(namespace):
     contentList=[]
-    output = executeCmd("kubectl -n %s get secrets --no-headers" % (namespace))
+    output = executeCmd(kubectlCommand + " -n %s get secrets --no-headers" % (namespace))
     for line in output.split('\n'):
         if len(line.split()) > 0:
             contentList.append(line)
