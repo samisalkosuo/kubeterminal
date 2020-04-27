@@ -203,7 +203,12 @@ def getNamespaces():
 
 def getServices(namespace):
     contentList=[]
-    output = executeCmd(kubectlCommand + " -n %s get svc --no-headers" % (namespace))
+    namespaceOption = " -n %s " % namespace
+    allNamespaceOption = ""
+    if namespace == "all-namespaces":
+        namespaceOption = ""
+        allNamespaceOption = "--all-namespaces"
+    output = executeCmd(kubectlCommand + " %s get svc --no-headers %s" % (namespaceOption,allNamespaceOption))
     for line in output.split('\n'):
         if len(line.split()) > 0:
             contentList.append(line)
@@ -214,7 +219,12 @@ def getServices(namespace):
 
 def getConfigMaps(namespace):
     contentList=[]
-    output = executeCmd(kubectlCommand + " -n %s get cm --no-headers" % (namespace))
+    namespaceOption = " -n %s " % namespace
+    allNamespaceOption = ""
+    if namespace == "all-namespaces":
+        namespaceOption = ""
+        allNamespaceOption = "--all-namespaces"
+    output = executeCmd(kubectlCommand + " %s get cm --no-headers %s" % (namespaceOption,allNamespaceOption))
     for line in output.split('\n'):
         if len(line.split()) > 0:
             contentList.append(line)
@@ -225,7 +235,12 @@ def getConfigMaps(namespace):
 
 def getSecrets(namespace):
     contentList=[]
-    output = executeCmd(kubectlCommand + " -n %s get secrets --no-headers" % (namespace))
+    namespaceOption = " -n %s " % namespace
+    allNamespaceOption = ""
+    if namespace == "all-namespaces":
+        namespaceOption = ""
+        allNamespaceOption = "--all-namespaces"
+    output = executeCmd(kubectlCommand + " %s get secrets --no-headers %s" % (namespaceOption,allNamespaceOption))
     for line in output.split('\n'):
         if len(line.split()) > 0:
             contentList.append(line)
