@@ -5,6 +5,7 @@ todo.md
 samples/
 kubeterminal_output_*
 .cert.tmp
+oc_login.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
