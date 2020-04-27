@@ -199,6 +199,10 @@ def setCommandWindowTitle():
     selected_node=nodeListArea.current_value
     selected_pod=str(podListArea.buffer.document.current_line).strip()
 
+    if selected_namespace == "all-namespaces":
+        fields = selected_pod.split()
+        selected_namespace = fields[0]
+        selected_pod = " ".join(fields[1:])
     title = ""
     if applicationState.content_mode == globals.WINDOW_POD:
         title = "NS: %s, NODE: %s, POD: %s" % (selected_namespace,selected_node,selected_pod)
