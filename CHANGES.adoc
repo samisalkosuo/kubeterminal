@@ -3,6 +3,7 @@
 - Bug fix when using workers-command.
 - Added sf to window-cmd.
 - Added rs to window-cmd.
+- Added ds to window-cmd.
 - Internal changes.
 
 == 0.16

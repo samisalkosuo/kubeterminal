@@ -102,6 +102,8 @@ def updateUI(updateArea):
             (contentList,title) = windowCmd.getStatefulSetList(ns)
         if applicationState.content_mode == globals.WINDOW_RS:
             (contentList,title) = windowCmd.getReplicaSetList(ns)
+        if applicationState.content_mode == globals.WINDOW_DS:
+            (contentList,title) = windowCmd.getDaemonSetList(ns)
                 
         podListArea.text=contentList
         podListAreaFrame.title=title
@@ -210,6 +212,8 @@ def setCommandWindowTitle():
         title = "NS: %s, STATEFULSET: %s" % (selected_namespace,selected_pod)
     if applicationState.content_mode == globals.WINDOW_RS:
         title = "NS: %s, REPLICASET: %s" % (selected_namespace,selected_pod)
+    if applicationState.content_mode == globals.WINDOW_DS:
+        title = "NS: %s, DAEMONSET: %s" % (selected_namespace,selected_pod)
 
     title = title.replace("<none>", '')
     title = re.sub(' +', ' ', title)
@@ -383,6 +387,8 @@ Commands:
             resourceType = "statefulset"
         if applicationState.content_mode == globals.WINDOW_RS:
             resourceType = "replicaset"
+        if applicationState.content_mode == globals.WINDOW_DS:
+            resourceType = "daemonset"
         
         if cmd == "describe":
             commandString ="ku describe %s %s" % (resourceType,resource)

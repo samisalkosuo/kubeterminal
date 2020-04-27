@@ -266,3 +266,18 @@ def getReplicaSets(namespace):
     #        services.append(fields[0])
     return contentList
     
+def getDaemonSets(namespace):
+    contentList=[]
+    namespaceOption = " -n %s " % namespace
+    allNamespaceOption = ""
+    if namespace == "all-namespaces":
+        namespaceOption = ""
+        allNamespaceOption = "--all-namespaces"
+    output = executeCmd(kubectlCommand + " %s get daemonset --no-headers %s" % (namespaceOption,allNamespaceOption))
+    for line in output.split('\n'):
+        if len(line.split()) > 0:
+            contentList.append(line)
+    #    fields = line.split()
+    #    if len(fields) > 0:
+    #        services.append(fields[0])
+    return contentList

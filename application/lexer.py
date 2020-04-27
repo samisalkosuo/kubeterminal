@@ -88,6 +88,32 @@ class PodStatusLexer(Lexer):
         else:
             return [(NAMED_COLORS["Yellow"],line)]
 
+    def daemonSetWindowColors(self,line):
+
+        fields = line.split()
+        from .state import current_namespace
+        if current_namespace == "all-namespaces":
+            desired = int(fields[2])
+            current = int(fields[3])
+            ready = int(fields[4])
+            uptodate = int(fields[5])
+            available = int(fields[6])
+        else:
+            desired = int(fields[1])
+            current = int(fields[2])
+            ready = int(fields[3])
+            uptodate = int(fields[4])
+            available = int(fields[5])
+        
+        #default green
+        if desired == current and desired == ready \
+            and current == ready and uptodate == current \
+            and available == desired and available == uptodate \
+            and desired == uptodate and available == desired:
+            return [(NAMED_COLORS["Green"],line)]
+        else:
+            return [(NAMED_COLORS["Yellow"],line)]
+
     def lex_document(self, document):
         #colors = list(sorted(NAMED_COLORS, key=NAMED_COLORS.get))
         def get_line(lineno):
@@ -112,6 +138,9 @@ class PodStatusLexer(Lexer):
 
             if content_mode == globals.WINDOW_RS:
                 return self.replicaSetWindowColors(line)
+
+            if content_mode == globals.WINDOW_DS:
+                return self.daemonSetWindowColors(line)
 
             #if document.current_line in line:
             #    return [(NAMED_COLORS["Black"],line)]
