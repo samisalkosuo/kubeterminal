@@ -100,6 +100,9 @@ def updateUI(updateArea):
             (contentList,title) = windowCmd.getSecretList(ns)
         if applicationState.content_mode == globals.WINDOW_SF:
             (contentList,title) = windowCmd.getStatefulSetList(ns)
+        if applicationState.content_mode == globals.WINDOW_RS:
+            (contentList,title) = windowCmd.getReplicaSetList(ns)
+                
         podListArea.text=contentList
         podListAreaFrame.title=title
         setCommandWindowTitle()
@@ -204,7 +207,9 @@ def setCommandWindowTitle():
     if applicationState.content_mode == globals.WINDOW_SECRET:
         title = "NS: %s, SECRET: %s" % (selected_namespace,selected_pod)
     if applicationState.content_mode == globals.WINDOW_SF:
-        title = "NS: %s, SF: %s" % (selected_namespace,selected_pod)
+        title = "NS: %s, STATEFULSET: %s" % (selected_namespace,selected_pod)
+    if applicationState.content_mode == globals.WINDOW_RS:
+        title = "NS: %s, REPLICASET: %s" % (selected_namespace,selected_pod)
 
     title = title.replace("<none>", '')
     title = re.sub(' +', ' ', title)
@@ -376,6 +381,8 @@ Commands:
             resourceType = "secret"
         if applicationState.content_mode == globals.WINDOW_SF:
             resourceType = "statefulset"
+        if applicationState.content_mode == globals.WINDOW_RS:
+            resourceType = "replicaset"
         
         if cmd == "describe":
             commandString ="ku describe %s %s" % (resourceType,resource)

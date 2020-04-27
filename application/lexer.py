@@ -60,8 +60,33 @@ class PodStatusLexer(Lexer):
 
     def statefulSetWindowColors(self,line):
 
+        #find out running status
+        #assume that line includes something like 2/2 or 1/1 or 1/3 
+        #to show how many statefulsets are running 
+        if self.allPodsRunning(line) == False:
+            return [(NAMED_COLORS["Yellow"],line)]
+
         #default green
         return [(NAMED_COLORS["Green"],line)]
+
+    def replicaSetWindowColors(self,line):
+
+        fields = line.split()
+        from .state import current_namespace
+        if current_namespace == "all-namespaces":
+            desired = int(fields[2])
+            current = int(fields[3])
+            ready = int(fields[4])
+        else:
+            desired = int(fields[1])
+            current = int(fields[2])
+            ready = int(fields[3])
+        
+        #default green
+        if desired == current and desired == ready and current == ready:
+            return [(NAMED_COLORS["Green"],line)]
+        else:
+            return [(NAMED_COLORS["Yellow"],line)]
 
     def lex_document(self, document):
         #colors = list(sorted(NAMED_COLORS, key=NAMED_COLORS.get))
@@ -84,6 +109,9 @@ class PodStatusLexer(Lexer):
 
             if content_mode == globals.WINDOW_SF:
                 return self.statefulSetWindowColors(line)
+
+            if content_mode == globals.WINDOW_RS:
+                return self.replicaSetWindowColors(line)
 
             #if document.current_line in line:
             #    return [(NAMED_COLORS["Black"],line)]
