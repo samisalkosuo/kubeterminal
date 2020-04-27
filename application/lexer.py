@@ -73,14 +73,18 @@ class PodStatusLexer(Lexer):
 
         fields = line.split()
         from .state import current_namespace
-        if current_namespace == "all-namespaces":
-            desired = int(fields[2])
-            current = int(fields[3])
-            ready = int(fields[4])
-        else:
-            desired = int(fields[1])
-            current = int(fields[2])
-            ready = int(fields[3])
+        try:
+            if current_namespace == "all-namespaces":
+                desired = int(fields[2])
+                current = int(fields[3])
+                ready = int(fields[4])
+            else:
+                desired = int(fields[1])
+                current = int(fields[2])
+                ready = int(fields[3])
+        except:
+            #not a number
+            return [(NAMED_COLORS["Yellow"],line)]
         
         #default green
         if desired == current and desired == ready and current == ready:
@@ -92,19 +96,23 @@ class PodStatusLexer(Lexer):
 
         fields = line.split()
         from .state import current_namespace
-        if current_namespace == "all-namespaces":
-            desired = int(fields[2])
-            current = int(fields[3])
-            ready = int(fields[4])
-            uptodate = int(fields[5])
-            available = int(fields[6])
-        else:
-            desired = int(fields[1])
-            current = int(fields[2])
-            ready = int(fields[3])
-            uptodate = int(fields[4])
-            available = int(fields[5])
-        
+        try:
+            if current_namespace == "all-namespaces":
+                desired = int(fields[2])
+                current = int(fields[3])
+                ready = int(fields[4])
+                uptodate = int(fields[5])
+                available = int(fields[6])
+            else:
+                desired = int(fields[1])
+                current = int(fields[2])
+                ready = int(fields[3])
+                uptodate = int(fields[4])
+                available = int(fields[5])
+        except:
+            #not a number
+            return [(NAMED_COLORS["Yellow"],line)]
+
         #default green
         if desired == current and desired == ready \
             and current == ready and uptodate == current \
