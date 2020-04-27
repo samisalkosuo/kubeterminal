@@ -153,7 +153,7 @@ def logsPod(podName,namespace,options):
 def getNodes(noderole=None):
     cmd = kubectlCommand + " get nodes "
     if noderole != None:
-       cmd = "%s -l node-role.kubernetes.io/%s=true" % (cmd,noderole)
+       cmd = "%s -l node-role.kubernetes.io/%s" % (cmd,noderole)
     output = executeCmd(cmd+" --no-headers")
     return output
 
@@ -165,7 +165,7 @@ def describeNode(nodeName):
 def getDescribeNodes(noderole=None):
     cmd = kubectlCommand + " describe nodes "
     if noderole != None:
-       cmd = "%s -l node-role.kubernetes.io/%s=true" % (cmd,noderole)
+       cmd = "%s -l node-role.kubernetes.io/%s" % (cmd,noderole)
     output = executeCmd(cmd)
     return output
 
