@@ -58,6 +58,11 @@ class PodStatusLexer(Lexer):
         #default green
         return [(NAMED_COLORS["Green"],line)]
 
+    def statefulSetWindowColors(self,line):
+
+        #default green
+        return [(NAMED_COLORS["Green"],line)]
+
     def lex_document(self, document):
         #colors = list(sorted(NAMED_COLORS, key=NAMED_COLORS.get))
         def get_line(lineno):
@@ -76,6 +81,9 @@ class PodStatusLexer(Lexer):
 
             if content_mode == globals.WINDOW_SECRET:
                 return self.secretWindowColors(line)
+
+            if content_mode == globals.WINDOW_SF:
+                return self.statefulSetWindowColors(line)
 
             #if document.current_line in line:
             #    return [(NAMED_COLORS["Black"],line)]

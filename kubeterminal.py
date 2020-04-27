@@ -98,6 +98,8 @@ def updateUI(updateArea):
             (contentList,title) = windowCmd.getConfigMapList(ns)
         if applicationState.content_mode == globals.WINDOW_SECRET:
             (contentList,title) = windowCmd.getSecretList(ns)
+        if applicationState.content_mode == globals.WINDOW_SF:
+            (contentList,title) = windowCmd.getStatefulSetList(ns)
         podListArea.text=contentList
         podListAreaFrame.title=title
         setCommandWindowTitle()
@@ -201,6 +203,8 @@ def setCommandWindowTitle():
         title = "NS: %s, CONFIGMAP: %s" % (selected_namespace,selected_pod)
     if applicationState.content_mode == globals.WINDOW_SECRET:
         title = "NS: %s, SECRET: %s" % (selected_namespace,selected_pod)
+    if applicationState.content_mode == globals.WINDOW_SF:
+        title = "NS: %s, SF: %s" % (selected_namespace,selected_pod)
 
     title = title.replace("<none>", '')
     title = re.sub(' +', ' ', title)
@@ -370,6 +374,8 @@ Commands:
             resourceType = "svc"
         if applicationState.content_mode == globals.WINDOW_SECRET:
             resourceType = "secret"
+        if applicationState.content_mode == globals.WINDOW_SF:
+            resourceType = "statefulset"
         
         if cmd == "describe":
             commandString ="ku describe %s %s" % (resourceType,resource)
