@@ -355,7 +355,7 @@ Commands:
 - shell <any shell command> - executes any shell command.
 - svc [nodeport | <service name>] - show services in selected namespace. If nodeport, shows only NodePort services. If service name, shows yaml of the service.
 - top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
-- window [pod | svc | cm | secret] - Set resource type for window.
+- window [pod | svc | cm | secret | sf | rs | ds] - Set resource type for window.
 - workers [-d] - get worker node resource allocation. Use -d to describe all worker nodes.
 - yaml - get YAML of currently selected resource.
 
