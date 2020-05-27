@@ -31,10 +31,8 @@ image::kubeterminal_05.png[KubeTerminal_05,800]
 *** http://cmder.net/[cmder console] used in Windows 10.
 * Clone/download this repo.
 * Install prereqs:
-** `pip install prompt-toolkit`
-** `pip install ascii_graph`
-** `pip install pyperclip`
-* Install and configure `kubectl`.
+** `pip install -r requirements.txt`
+** Install and configure `kubectl`.
 ** Install `openssl` in order to view certificates.
 * Login to Kubernetes cluster before using KubeTerminal.
 * Start KubeTerminal:
@@ -65,6 +63,8 @@ docker create -it --name kubeterminal kazhar/kubeterminal bash
 docker cp kubeterminal:/root/dist/kubeterminal kubeterminal.bin
 docker rm -fv kubeterminal
 ----
+
+Or use script: `get_latest_linux_binary.sh`
 
 === Create binary
 

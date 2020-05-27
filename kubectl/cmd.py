@@ -195,6 +195,11 @@ def getPods(namespace,nodeNameList=[]):
 def getNamespaces():
     namespaces=[]
     output = executeCmd(kubectlCommand + " get namespaces --no-headers")
+    if output.find("namespaces is forbidden") > -1:
+        #OpenShift does not allow normal users to list namespaces
+        #OpenShift has resource project that can be used
+        output = executeCmd(kubectlCommand + " get projects --no-headers")
+        
     for line in output.split('\n'):
         fields = line.split()
         if len(fields) > 0:
