@@ -2,6 +2,7 @@
 
 - When using OpenShift, if namespaces fails, then use projects.
 - Added wrap-command and shift-g shortcut to toggle wrapping in Output-window.
+
 == 0.17
 
 - Bug fix when using workers-command.
