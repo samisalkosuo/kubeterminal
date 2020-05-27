@@ -165,6 +165,10 @@ def logspod_(event):
 def toendofoutputbuffer_(event):    
     outputArea.buffer.cursor_down(outputArea.document.line_count)
 
+@kb.add('W')
+def togglewrap_(event):    
+    toggleWrap()
+
 #search keyboard
 @kb.add('/')
 def searchbuffer_(event):
@@ -331,6 +335,7 @@ Key bindings
 - <ctrl-y>, show YAML of currently selected resource.
 - <ctrl-r>, refresh UI.
 - <shift-g>, to the end of Output-window buffer.
+- <shift-w>, toggle wrapping in Output-window.
 - / -  search string in Output-window.
 
 Commands:
@@ -357,6 +362,7 @@ Commands:
 - top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
 - window [pod | svc | cm | secret | sf | rs | ds] - Set resource type for window.
 - workers [-d] - get worker node resource allocation. Use -d to describe all worker nodes.
+- wrap - toggle wrapping in Output-window.
 - yaml - get YAML of currently selected resource.
 
 """
@@ -589,6 +595,9 @@ Commands:
     if cmdString.find("cls") == 0:
         clearOutputWindow()
 
+    if cmdString.find("wrap") == 0:
+        toggleWrap()
+
     if cmdString.find("/") == 0:
         #searching
         applicationState.searchString=cmdString[1:]
@@ -649,6 +658,9 @@ def commandPrompt(line_number, wrap_count):
 
 def clearOutputWindow():
     outputArea.text = ""
+
+def toggleWrap():
+    outputArea.wrap_lines = not outputArea.wrap_lines
 
 command_container = TextArea(text="", multiline=False,accept_handler=commandHander,get_line_prefix=commandPrompt)
 commandWindowFrame= Frame(command_container,title="KubeTerminal (Ctrl-d to describe pod, Ctrl-l to show logs, Esc to exit, Tab to switch focus and refresh UI, 'help' for help)",height=4)
