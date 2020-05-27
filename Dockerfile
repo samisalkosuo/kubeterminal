@@ -1,6 +1,6 @@
 #create KubeTerminal Linux executable
 
-FROM ubuntu:16.04
+FROM ubuntu:16.04 as build
 
 RUN apt-get update
 RUN apt -y install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget
@@ -31,4 +31,7 @@ COPY kubectl/ ./kubectl/
 
 RUN pyinstaller --onefile kubeterminal.py
 
-CMD ["/bin/bash"]
+FROM busybox:1.31.1
+
+COPY --from=build /root/dist/kubeterminal .
+

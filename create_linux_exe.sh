@@ -8,7 +8,7 @@ __name=kubeterminalbinary
 __binary_file=kubeterminal.bin
 docker build -t ${__name}  .
 docker create -it --name ${__name} ${__name} bash
-docker cp ${__name}:/root/dist/kubeterminal ${__binary_file}
+docker cp ${__name}:/kubeterminal ${__binary_file}
 docker rm -fv ${__name}
 
 echo "Linux executable: ${__binary_file}"
