@@ -1,5 +1,6 @@
 = KubeTerminal
 :imagesdir: images/
+:toc:
 
 KubeTerminal is helper tool for Kubernetes. The idea is provide a simple and quick tool to get the basics out of Kubernetes environment. 
 

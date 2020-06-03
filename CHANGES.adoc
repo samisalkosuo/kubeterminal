@@ -1,3 +1,8 @@
+== 0.19
+
+- Added --oc option to select oc-command instead of kubectls.
+- Check if user is forbidden to list nodes/namespace, if so then do not show them.
+
 == 0.18
 
 - When using OpenShift, if namespaces fails, then use projects.
