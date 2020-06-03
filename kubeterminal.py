@@ -20,6 +20,9 @@ from prompt_toolkit.shortcuts import yes_no_dialog
 from prompt_toolkit.utils import Event
 from prompt_toolkit.filters import to_filter
 
+#set command before importing 
+os.environ["KUBETERMINAL_CMD"] = "kubectl"
+
 from kubectl import namespaces,pods,nodes,windowCmd
 from application import state,lexer
 from kubectl import cmd 
@@ -30,7 +33,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--no-dynamic-title', action="store_true", help='Do not set command window title to show NS, node and pod.')
 parser.add_argument('--compact-windows', action="store_true", help='Set namespace, node and pod windows to more compact size.')
 parser.add_argument('--even-more-compact-windows', action="store_true", help='Set namespace, node and pod windows to even more compact size.')
+parser.add_argument('--oc', action="store_true", help='Use oc-command insteand of kubectl.')
 args = parser.parse_args()
+
+if args.oc == True:
+    os.environ["KUBETERMINAL_CMD"] = "oc"
 
 applicationState = state#state.State()
 
@@ -186,6 +193,8 @@ def searchbuffer_(event):
     command_container.text="/"
     command_container.buffer.cursor_right()
 
+#check permissions for namespaces and nodes
+
 #content windows
 namespaceWindow = RadioList(namespaces.list())
 namespaceWindowFrame= Frame(namespaceWindow,title="Namespaces",height=8,width=namespaceWindowSize)
@@ -313,6 +322,7 @@ def commandHander(buffer):
 
 #actual command handler, can be called from other sources as well
 def executeCommand(cmdString):
+    import os#os imported also here because import at the beginning is not in this scope...
     refreshUIAfterCmd = False
     text=""
     cmdcmdString = cmdString.strip()
@@ -355,6 +365,7 @@ Commands:
 - labels - show labels of currently selected pod.
 - logs [-c <container_name>] - show logs of currently selected pod.
 - node <node name> - show description of given node, or currently selected node.
+- oc <cmds/opts/args> - execute oc in currently selected namespace.
 - secret [<secret-name>] [<key-name>] [--decode | --cert] - get secrets in selected namespace. If first arg, then show yaml of given secret. If also second arg, then show value of given key. If --decode is present, value is base64 decoded. If --cert is present, value is assumed to be TLS certificate and openssl is used to decode it.
 - save [<filename>] - save Output-window contents to a file.
 - shell <any shell command> - executes any shell command.
@@ -491,10 +502,15 @@ Commands:
                 doBase64decode=True
                 isCertificate = True
 
-    if cmdString.find("ku") == 0:
+    if cmdString.find("ku ") == 0:
         namespace = " -n %s" % namespace        
         kuArgs = cmdString[2:]
         cmdString  = "shell kubectl%s %s" % (namespace, kuArgs.strip())
+
+    if cmdString.find("oc ") == 0:
+        namespace = " -n %s" % namespace        
+        kuArgs = cmdString[2:]
+        cmdString  = "shell oc%s %s" % (namespace, kuArgs.strip())
 
     if cmdString.find("ingress") == 0:
         if isAllNamespaces() == True:
@@ -505,7 +521,7 @@ Commands:
         kuArgs = cmdString.split()
         if len(kuArgs) > 1:
             kuCmd = kuCmd + kuArgs[1] + " -o yaml"
-        cmdString  = "shell kubectl%s %s" % (namespace, kuCmd)
+        cmdString  = "shell %s %s %s" % (os.environ["KUBETERMINAL_CMD"], namespace, kuCmd)
 
 
     if cmdString.find("svc") == 0:
@@ -521,7 +537,7 @@ Commands:
                 kuCmd = kuCmd + " | grep NodePort"
             else:
                 kuCmd = kuCmd + kuArgs[1] + " -o yaml"
-        cmdString  = "shell kubectl%s %s" % (namespace, kuCmd)
+        cmdString  = "shell %s %s %s" % (os.environ["KUBETERMINAL_CMD"], namespace, kuCmd)
 
 
     if cmdString.find("node") == 0:

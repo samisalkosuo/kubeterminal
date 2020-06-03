@@ -2,9 +2,9 @@ from subprocess import check_output
 import subprocess
 import threading
 import locale
+import os
 
-
-kubectlCommand = "kubectl"
+kubectlCommand = os.environ["KUBETERMINAL_CMD"]
 
 #execute kubectl commands
 def executeCmd(cmd):
