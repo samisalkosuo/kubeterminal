@@ -1,9 +1,13 @@
 
 from .cmd import getNamespaces
+from .permissions import isForbiddenAllNamespace
 
 def list():
     '''Return list of tuples of namespaces: [(value,label),(value,label),...]'''
-    namespaces = [("all-namespaces","All namespaces")]
+    if isForbiddenAllNamespace() == True:
+        namespaces = []
+    else:
+        namespaces = [("all-namespaces","All namespaces")]
     allNamespaces =  getNamespaces()
     
     for ns in allNamespaces:

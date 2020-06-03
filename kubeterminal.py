@@ -27,6 +27,7 @@ from kubectl import namespaces,pods,nodes,windowCmd
 from application import state,lexer
 from kubectl import cmd 
 from application import globals
+from kubectl import permissions
 
 #CLI args
 parser = argparse.ArgumentParser()
@@ -54,6 +55,8 @@ if args.even_more_compact_windows == True:
     namespaceWindowSize=20
     nodeWindowSize=10
     podListWindowSize=30
+if permissions.isForbiddenNodes() == True:
+    namespaceWindowSize=80
 
 
 enableMouseSupport = False
@@ -193,19 +196,30 @@ def searchbuffer_(event):
     command_container.text="/"
     command_container.buffer.cursor_right()
 
-#check permissions for namespaces and nodes
 
 #content windows
-namespaceWindow = RadioList(namespaces.list())
-namespaceWindowFrame= Frame(namespaceWindow,title="Namespaces",height=8,width=namespaceWindowSize)
+namespaceList = namespaces.list()
+nodesList = nodes.list()
 
-nodeListArea = RadioList(nodes.list())
-nodeWindowFrame= Frame(nodeListArea,title="Nodes",height=8,width=nodeWindowSize)
+namespaceWindow = RadioList(namespaceList)
+windowHeight = len(namespaceList) + 2 
+if windowHeight > 8:
+    windowHeight = 8
+namespaceWindowFrame= Frame(namespaceWindow,title="Namespaces",height=windowHeight,width=namespaceWindowSize)
 
-upper_left_container = VSplit([namespaceWindowFrame, 
+nodeListArea = RadioList(nodesList)
+nodeWindowFrame= Frame(nodeListArea,title="Nodes",height=windowHeight,width=nodeWindowSize)
+#check permissions for nodes
+#normal OpenShift user does not see nodes nor namespaces other than his/her own.
+if permissions.isForbiddenNodes() == True:
+    #if user can not see Nodes do not show node window
+    upper_left_container = namespaceWindowFrame
+else:
+    upper_left_container = VSplit([namespaceWindowFrame, 
                 #HorizontalLine(),
                 #Window(height=1, char='-'),
                 nodeWindowFrame])
+
 
 def setCommandWindowTitle():
     selected_namespace=namespaceWindow.current_value
