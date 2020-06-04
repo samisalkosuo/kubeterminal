@@ -12,7 +12,9 @@ COPY kubeterminal.py .
 COPY application/ ./application/
 COPY kubectl/ ./kubectl/
 
-RUN pyinstaller --onefile kubeterminal.py
+COPY hook.py .
+
+RUN pyinstaller --onefile --additional-hooks-dir=. kubeterminal.py
 
 FROM busybox:1.31.1
 
