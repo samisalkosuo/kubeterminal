@@ -1,6 +1,11 @@
+== 0.20
+
+- Shows now all pods after startup.
+- Added shortcuts to change window (Alt-1, Alt-2, and so on).
+
 == 0.19
 
-- Added --oc option to select oc-command instead of kubectls.
+- Added --oc option to select oc-command instead of kubectl.
 - Check if user is forbidden to list nodes/namespace, if so then do not show them.
 
 == 0.18

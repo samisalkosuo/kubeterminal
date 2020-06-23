@@ -179,6 +179,62 @@ def toendofoutputbuffer_(event):
 def togglewrap_(event):    
     toggleWrap()
 
+
+def changeWindow(windowName):
+    updateState()
+    executeCommand("window %s" % windowName)
+
+#change window keyboard shortcuts
+@kb.add('escape','w')
+def _(event):
+    executeCommand("window")
+    #print('Control-A pressed, followed by Control-B')
+
+@kb.add('escape','1')
+def _(event):
+    changeWindow("pod")
+
+@kb.add('escape','2')
+def _(event):
+    changeWindow("svc")
+
+@kb.add('escape','3')
+def _(event):
+    changeWindow("cm")
+
+@kb.add('escape','4')
+def _(event):
+    changeWindow("secret")
+
+@kb.add('escape','5')
+def _(event):
+    changeWindow("sf")
+
+@kb.add('escape','6')
+def _(event):
+    changeWindow("rs")
+
+@kb.add('escape','7')
+def _(event):
+    changeWindow("ds")
+
+@kb.add('escape','8')
+def _(event):
+    appendToOutput("No window",cmdString="Alt-8")
+
+@kb.add('escape','9')
+def _(event):
+    appendToOutput("No window",cmdString="Alt-9")
+
+@kb.add('escape','0')
+def _(event):
+    appendToOutput("No window",cmdString="Alt-0")
+
+@kb.add('escape','1','escape','0')
+def _(event):
+    appendToOutput("No window",cmdString="Alt-10")
+
+
 #search keyboard
 @kb.add('/')
 def searchbuffer_(event):
@@ -354,6 +410,13 @@ This output window shows output of commands.
 Key bindings
 
 - ESC - exit program.
+- <alt-1>, show pods.
+- <alt-2>, show configmaps.
+- <alt-3>, show services.
+- <alt-4>, show secrets.
+- <alt-5>, show statefulsets.
+- <alt-6>, show replicasets.
+- <alt-7>, show daemonsets.
 - <ctrl-l>, show logs of currently selected pod (without any options).
 - <ctrl-d>, show description of currently selected resource (without any options).
 - <ctrl-y>, show YAML of currently selected resource.
@@ -670,9 +733,9 @@ Commands:
             applicationState.content_mode = "WINDOW_%s" % (cmdArgs[1].upper())
             updateUI("namespacepods")
         else:
-            text = "Available commands/Resource types:\n"
-            for resourceType in globals.WINDOW_LIST:
-                text="%swindow %s\n" % (text,resourceType.lower().replace("window_",""))
+            text = "Available windows:\n"
+            for idx, resourceType in enumerate(globals.WINDOW_LIST):
+                text="%swindow %s (Alt-%d)\n" % (text,resourceType.lower().replace("window_",""),idx+1)
 
 
     if text != "":
@@ -703,9 +766,19 @@ root_container = HSplit([content_container,
 
 layout = Layout(root_container)
 
+#call before render only when app is started the first time
+#=> sets content to pod window
+started=False
+def before_render(application):
+    global started
+    if started == False:
+        updateState()
+        started = True
+
 app = Application(layout=layout,
                 key_bindings=kb,
                 full_screen=True,             
-                mouse_support=enableMouseSupport
+                mouse_support=enableMouseSupport,
+                before_render=before_render
                 )
 app.run()
