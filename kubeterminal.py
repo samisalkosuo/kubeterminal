@@ -114,6 +114,8 @@ def updateUI(updateArea):
             (contentList,title) = windowCmd.getReplicaSetList(ns)
         if applicationState.content_mode == globals.WINDOW_DS:
             (contentList,title) = windowCmd.getDaemonSetList(ns)
+        if applicationState.content_mode == globals.WINDOW_CONTEXT:
+            (contentList,title) = windowCmd.getContextList()
                 
         podListArea.text=contentList
         podListAreaFrame.title=title
@@ -179,6 +181,18 @@ def toendofoutputbuffer_(event):
 def togglewrap_(event):    
     toggleWrap()
 
+@kb.add('c-u')
+def _(event):
+    executeCommand("use-context")
+
+@kb.add('c-up')
+def _(event):
+    executeCommand("use-context")
+
+@kb.add('escape','down')
+def _(event):
+    executeCommand("window")
+
 
 def changeWindow(windowName):
     updateState()
@@ -221,6 +235,7 @@ def _(event):
 @kb.add('escape','8')
 def _(event):
     appendToOutput("No window",cmdString="Alt-8")
+    #changeWindow("context")
 
 @kb.add('escape','9')
 def _(event):
@@ -233,6 +248,10 @@ def _(event):
 @kb.add('escape','1','escape','0')
 def _(event):
     appendToOutput("No window",cmdString="Alt-10")
+
+@kb.add('escape','1','escape','1')
+def _(event):
+    appendToOutput("No window",cmdString="Alt-11")
 
 
 #search keyboard
@@ -301,6 +320,11 @@ def setCommandWindowTitle():
         title = "NS: %s, REPLICASET: %s" % (selected_namespace,selected_pod)
     if applicationState.content_mode == globals.WINDOW_DS:
         title = "NS: %s, DAEMONSET: %s" % (selected_namespace,selected_pod)
+    if applicationState.content_mode == globals.WINDOW_CONTEXT:
+        #select current context as title
+        selected_pod = str(podListArea.buffer.document.current_line).strip()
+        title = "Context: %s" % (selected_pod)
+        #title = "Current Context: %s" % (applicationState.current_context)
 
     title = title.replace("<none>", '')
     title = re.sub(' +', ' ', title)
@@ -432,6 +456,7 @@ Commands:
 - clip - copy Output-window contents to clipboard.
 - cls - clear Output-window.
 - cm [<configmap-name>] [<key-name>] [--decode] - get configmaps in selected namespace. If first arg, then show yaml of given configmap. If also second arg, then show value of given key. If --decode is present, value is base64 decoded.
+- contexts - show current and available contexts.
 - decode <data key> - decode base64 encoded secret or configmap value.
 - delete [--force] - delete currently selected pod, optionally force delete.
 - describe <describe options> - show description of currently selected resource.
@@ -454,7 +479,12 @@ Commands:
 - yaml - get YAML of currently selected resource.
 
 """
+
     def getResourceNameAndNamespaceName():
+
+        if applicationState.content_mode == globals.WINDOW_CONTEXT:
+            return (applicationState.resource_namespace,applicationState.resource_resourceName)
+
         podLine = applicationState.selected_pod
         namespace=""
         resourceName=""
@@ -726,17 +756,44 @@ Commands:
         pyperclip.copy(outputArea.text)
         text="Output window contents copied to clipboard."
 
+    if cmdString.find("use-context") == 0:
+        if applicationState.content_mode == globals.WINDOW_CONTEXT:
+            selectedContext = applicationState.selected_pod
+            cmdString = "use-context %s" % (selectedContext)
+            text="TODO: change context to %s" % (selectedContext)
+            #text = "\n".join(namespaceWindow.values)
+            #change values like this
+            #namespaceWindow.values = [("jee","jee")]
+            #update namespaces and nodes
+            pass
+        else:
+            text = "ERROR: use-context is only available for contexts."
+
     if cmdString.find("win") == 0:
         #window command to select content for "pod"-window
         cmdArgs = cmdString.split()
         if len(cmdArgs) > 1:
             applicationState.content_mode = "WINDOW_%s" % (cmdArgs[1].upper())
+            #if window is context then update current context variable
+            if applicationState.content_mode == globals.WINDOW_CONTEXT:
+              applicationState.current_context = cmd.getCurrentContext()
+              #store namespace and resource name that are selected before moving to non resource window like context
+              (applicationState.resource_namespace,applicationState.resource_resourceName)=getResourceNameAndNamespaceName()
+              text = "Current context:\n" + applicationState.current_context
+              text = text+ "\n\nSelect context and enter command 'use-context' or use ctrl-u to change context."
             updateUI("namespacepods")
         else:
             text = "Available windows:\n"
             for idx, resourceType in enumerate(globals.WINDOW_LIST):
                 text="%swindow %s (Alt-%d)\n" % (text,resourceType.lower().replace("window_",""),idx+1)
 
+    if cmdString.find("context") == 0:
+      #context command to show contexts
+      #cmdArgs = cmdString.split()
+      (text,title) = windowCmd.getContextList()
+      text = "Available contexts:\n%s" % text
+      currentContext = cmd.getCurrentContext()
+      text = "Current context:\n%s\n\n%s" % (currentContext, text)
 
     if text != "":
         appendToOutput(text,cmdString=cmdString)

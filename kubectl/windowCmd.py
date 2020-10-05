@@ -1,7 +1,7 @@
 #functions to get content for "pod"-window
 
 from .pods import list as podList
-from .cmd import getServices,getConfigMaps,getSecrets,getStatefulSets,getReplicaSets,getDaemonSets
+from .cmd import getServices,getConfigMaps,getSecrets,getStatefulSets,getReplicaSets,getDaemonSets,getContexts
 
 def getPods(namespace, nodes):
     contentList=podList(namespace,nodes)
@@ -43,4 +43,10 @@ def getDaemonSetList(namespace):
     contentList=getDaemonSets(namespace)
     podCount = len(contentList)
     title="%d DaemonSets (ns: %s)" % (podCount, namespace)
+    return ("\n".join(contentList), title)
+
+def getContextList():
+    contentList=getContexts()
+    podCount = len(contentList)
+    title="%d Contexts" % (podCount)
     return ("\n".join(contentList), title)

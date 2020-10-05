@@ -122,6 +122,16 @@ class PodStatusLexer(Lexer):
         else:
             return [(NAMED_COLORS["Yellow"],line)]
 
+    def contextWindowColors(self, line):
+
+        from .state import current_context
+        if current_context == line:
+            return [(NAMED_COLORS["Green"],line)]
+        
+        #not current context, yellow
+        return [(NAMED_COLORS["Yellow"],line)]
+        
+
     def lex_document(self, document):
         #colors = list(sorted(NAMED_COLORS, key=NAMED_COLORS.get))
         def get_line(lineno):
@@ -149,6 +159,9 @@ class PodStatusLexer(Lexer):
 
             if content_mode == globals.WINDOW_DS:
                 return self.daemonSetWindowColors(line)
+
+            if content_mode == globals.WINDOW_CONTEXT:
+                return self.contextWindowColors(line)
 
             #if document.current_line in line:
             #    return [(NAMED_COLORS["Black"],line)]

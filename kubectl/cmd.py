@@ -301,3 +301,16 @@ def getDaemonSets(namespace):
     #    if len(fields) > 0:
     #        services.append(fields[0])
     return contentList
+
+def getContexts():
+    contentList=[]
+    output = executeCmd(kubectlCommand + " config get-contexts -o name")
+    for line in output.split('\n'):
+        if len(line.split()) > 0:
+            contentList.append(line)
+    return contentList
+
+def getCurrentContext():
+    contentList=[]
+    output = executeCmd(kubectlCommand + " config current-context")
+    return output.strip()
