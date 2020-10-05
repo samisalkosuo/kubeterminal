@@ -35,6 +35,7 @@ parser.add_argument('--no-dynamic-title', action="store_true", help='Do not set 
 parser.add_argument('--compact-windows', action="store_true", help='Set namespace, node and pod windows to more compact size.')
 parser.add_argument('--even-more-compact-windows', action="store_true", help='Set namespace, node and pod windows to even more compact size.')
 parser.add_argument('--oc', action="store_true", help='Use oc-command insteand of kubectl.')
+parser.add_argument('--no-help', action="store_true", help='Do not show help when starting KubeTerminals.')
 args = parser.parse_args()
 
 if args.oc == True:
@@ -831,6 +832,8 @@ def before_render(application):
     if started == False:
         updateState()
         started = True
+        if args.no_help == False:
+          executeCommand("help")
 
 app = Application(layout=layout,
                 key_bindings=kb,

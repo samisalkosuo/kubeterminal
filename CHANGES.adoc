@@ -1,3 +1,9 @@
+== 0.21
+
+- Added contexts-command.
+- Shows help when starting KubeTerminal.
+- Added --no-help option to not show help when starting Kubeterminal.
+
 == 0.20
 
 - Shows now all pods after startup.
