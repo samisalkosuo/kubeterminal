@@ -264,94 +264,32 @@ def _(event):
 def _(event):
     appendToOutput("No window",cmdString="Alt-0")
 
-@kb.add('escape','1')
-def _(event):
-    changeWindow("pod")
+#key shortcuts to all windows alt-1 - alt-xx
+for index, windowName in enumerate(globals.WINDOW_LIST, start=1):
 
-@kb.add('escape','2')
-def _(event):
-    changeWindow("svc")
+    if index < 10:
+      #Alt-1 - 9
+      @kb.add('escape',str(index))
+      def _(event):
+        keySequence = event.key_sequence
+        if len(keySequence) == 2:
+            windowIndex = int(keySequence[1].key) - 1 
+            wn = globals.WINDOW_LIST[windowIndex]
+            changeWindow(globals.WINDOW_RESOURCE_TYPE[wn])
 
-@kb.add('escape','3')
-def _(event):
-    changeWindow("cm")
+    else:
+      #Alt-10 - 99
+      numbers = str(index)
+      @kb.add('escape',numbers[0],'escape',numbers[1])
+      def _(event):
+        keySequence = event.key_sequence
+        if len(keySequence) == 4:
+            ki1 = int(keySequence[1].key) 
+            ki2 = int(keySequence[3].key) 
+            windowIndex = int("%d%d" % (ki1, ki2)) - 1
+            wn = globals.WINDOW_LIST[windowIndex]
+            changeWindow(globals.WINDOW_RESOURCE_TYPE[wn])
 
-@kb.add('escape','4')
-def _(event):
-    changeWindow("secret")
-
-@kb.add('escape','5')
-def _(event):
-    changeWindow("sf")
-
-@kb.add('escape','6')
-def _(event):
-    changeWindow("rs")
-
-@kb.add('escape','7')
-def _(event):
-    changeWindow("ds")
-
-@kb.add('escape','8')
-def _(event):
-    changeWindow("pvc")
-
-@kb.add('escape','9')
-def _(event):
-    changeWindow("pv")
-
-@kb.add('escape','1','escape','0')
-def _(event):
-    changeWindow("deployment")
-
-@kb.add('escape','1','escape','1')
-def _(event):
-    changeWindow("sc")
-
-@kb.add('escape','1','escape','2')
-def _(event):
-    changeWindow("job")
-
-@kb.add('escape','1','escape','3')
-def _(event):
-    changeWindow("cronjob")
-
-@kb.add('escape','1','escape','4')
-def _(event):
-    changeWindow("role")
-
-@kb.add('escape','1','escape','5')
-def _(event):
-    changeWindow("rolebinding")
-
-@kb.add('escape','1','escape','6')
-def _(event):
-    changeWindow("sa")
-
-@kb.add('escape','1','escape','7')
-def _(event):
-    changeWindow("pdb")
-
-@kb.add('escape','1','escape','8')
-def _(event):
-    changeWindow("route")
-
-
-@kb.add('escape','1','escape','9')
-def _(event):
-    changeWindow("ingress")
-
-@kb.add('escape','2','escape','0')
-def _(event):
-    changeWindow("node")
-
-@kb.add('escape','2','escape','1')
-def _(event):
-    changeWindow("crd")
-
-@kb.add('escape','2','escape','2')
-def _(event):
-    changeWindow("namespace")
 
 #search keyboard
 @kb.add('/')
@@ -853,7 +791,7 @@ root_container = HSplit([content_container,
 
 layout = Layout(root_container)
 
-#call before render only when app is started the first time
+#call 'before render'-function only when app is started the first time
 #=> sets content to pod window
 started=False
 def before_render(application):
