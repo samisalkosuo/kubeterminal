@@ -206,14 +206,14 @@ def getNamespaces():
             namespaces.append(fields[0])
     return namespaces
 
-def getServices(namespace):
+def getResources(resourceType, namespace):
     contentList=[]
     namespaceOption = " -n %s " % namespace
     allNamespaceOption = ""
     if namespace == "all-namespaces":
         namespaceOption = ""
         allNamespaceOption = "--all-namespaces"
-    output = executeCmd(kubectlCommand + " %s get svc --no-headers %s" % (namespaceOption,allNamespaceOption))
+    output = executeCmd(kubectlCommand + " %s get %s --no-headers %s" % (namespaceOption, resourceType, allNamespaceOption))
     for line in output.split('\n'):
         if len(line.split()) > 0:
             contentList.append(line)
@@ -222,85 +222,6 @@ def getServices(namespace):
     #        services.append(fields[0])
     return contentList
 
-def getConfigMaps(namespace):
-    contentList=[]
-    namespaceOption = " -n %s " % namespace
-    allNamespaceOption = ""
-    if namespace == "all-namespaces":
-        namespaceOption = ""
-        allNamespaceOption = "--all-namespaces"
-    output = executeCmd(kubectlCommand + " %s get cm --no-headers %s" % (namespaceOption,allNamespaceOption))
-    for line in output.split('\n'):
-        if len(line.split()) > 0:
-            contentList.append(line)
-    #    fields = line.split()
-    #    if len(fields) > 0:
-    #        services.append(fields[0])
-    return contentList
-
-def getSecrets(namespace):
-    contentList=[]
-    namespaceOption = " -n %s " % namespace
-    allNamespaceOption = ""
-    if namespace == "all-namespaces":
-        namespaceOption = ""
-        allNamespaceOption = "--all-namespaces"
-    output = executeCmd(kubectlCommand + " %s get secrets --no-headers %s" % (namespaceOption,allNamespaceOption))
-    for line in output.split('\n'):
-        if len(line.split()) > 0:
-            contentList.append(line)
-    #    fields = line.split()
-    #    if len(fields) > 0:
-    #        services.append(fields[0])
-    return contentList
-
-def getStatefulSets(namespace):
-    contentList=[]
-    namespaceOption = " -n %s " % namespace
-    allNamespaceOption = ""
-    if namespace == "all-namespaces":
-        namespaceOption = ""
-        allNamespaceOption = "--all-namespaces"
-    output = executeCmd(kubectlCommand + " %s get statefulset --no-headers %s" % (namespaceOption,allNamespaceOption))
-    for line in output.split('\n'):
-        if len(line.split()) > 0:
-            contentList.append(line)
-    #    fields = line.split()
-    #    if len(fields) > 0:
-    #        services.append(fields[0])
-    return contentList
-
-def getReplicaSets(namespace):
-    contentList=[]
-    namespaceOption = " -n %s " % namespace
-    allNamespaceOption = ""
-    if namespace == "all-namespaces":
-        namespaceOption = ""
-        allNamespaceOption = "--all-namespaces"
-    output = executeCmd(kubectlCommand + " %s get replicaset --no-headers %s" % (namespaceOption,allNamespaceOption))
-    for line in output.split('\n'):
-        if len(line.split()) > 0:
-            contentList.append(line)
-    #    fields = line.split()
-    #    if len(fields) > 0:
-    #        services.append(fields[0])
-    return contentList
-    
-def getDaemonSets(namespace):
-    contentList=[]
-    namespaceOption = " -n %s " % namespace
-    allNamespaceOption = ""
-    if namespace == "all-namespaces":
-        namespaceOption = ""
-        allNamespaceOption = "--all-namespaces"
-    output = executeCmd(kubectlCommand + " %s get daemonset --no-headers %s" % (namespaceOption,allNamespaceOption))
-    for line in output.split('\n'):
-        if len(line.split()) > 0:
-            contentList.append(line)
-    #    fields = line.split()
-    #    if len(fields) > 0:
-    #        services.append(fields[0])
-    return contentList
 
 def getContexts():
     contentList=[]

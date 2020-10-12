@@ -41,6 +41,73 @@ args = parser.parse_args()
 if args.oc == True:
     os.environ["KUBETERMINAL_CMD"] = "oc"
 
+helpText = """KubeTerminal
+
+Helper tool for Kubernetes.
+
+This output window shows output of commands.
+"Selected pod/resource" is the resource where cursor is in the Resources window.
+
+Key bindings
+
+- ESC - exit program.
+- <alt-1>, show pods.
+- <alt-2>, show configmaps.
+- <alt-3>, show services.
+- <alt-4>, show secrets.
+- <alt-5>, show statefulsets.
+- <alt-6>, show replicasets.
+- <alt-7>, show daemonsets.
+- <alt-8>, show persistentvolumeclaims.
+- <alt-9>, show persistentvolumes.
+- <alt-10>, show deployments.
+- <alt-11>, show storageclasses.
+- <alt-12>, show jobs.
+- <alt-13>, show cronjobs.
+- <alt-14>, show roles.
+- <alt-15>, show rolebindings.
+- <alt-16>, show serviceaccounts.
+- <alt-17>, show poddisruptionbudgets.
+- <alt-18>, show routes.
+- <alt-19>, show ingresses.
+- <alt-20>, show nodes.
+- <alt-21>, show customresourcedefinitions.
+- <alt-22>, show namespaces.
+- <ctrl-l>, show logs of currently selected pod (without any options).
+- <ctrl-d>, show description of currently selected resource (without any options).
+- <ctrl-y>, show YAML of currently selected resource.
+- <ctrl-r>, refresh resource (pod etc.) list.
+- <shift-g>, to the end of Output-window buffer.
+- <shift-w>, toggle wrapping in Output-window.
+- / -  search string in Output-window.
+
+Commands:
+
+- help - this help.
+- cert <data key> - show certificate of secret value using openssl.
+- clip - copy Output-window contents to clipboard.
+- cls - clear Output-window.
+- contexts - show current and available contexts.
+- decode <data key> - decode base64 encoded secret or configmap value.
+- delete [--force] - delete currently selected pod, optionally force delete.
+- describe <describe options> - show description of currently selected resource.
+- exec [-c <container_name>] <command> - exec command in currently selected pod.
+- json - get JSON of currently selected resource.
+- ku <cmds/opts/args> - execute kubectl in currently selected namespace.
+- labels - show labels of currently selected pod.
+- logs [-c <container_name>] - show logs of currently selected pod.
+- oc <cmds/opts/args> - execute oc in currently selected namespace.
+- save [<filename>] - save Output-window contents to a file.
+- shell <any shell command> - executes any shell command.
+- top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
+- window [<window name> | list] - Set resource type for window. 'window list' lists available windows.
+- workers [-d] - get worker node resource allocation. Use -d to describe all worker nodes.
+- wrap - toggle wrapping in Output-window.
+- yaml - get YAML of currently selected resource.
+
+"""
+
+
 applicationState = state#state.State()
 
 applicationState.content_mode=globals.WINDOW_POD
@@ -101,22 +168,7 @@ def updateUI(updateArea):
         ns = applicationState.current_namespace
         contentList = ""
         title = ""
-        if applicationState.content_mode == globals.WINDOW_POD:
-            (contentList,title) = windowCmd.getPods(ns,applicationState.selected_node)
-        if applicationState.content_mode == globals.WINDOW_SVC:
-            (contentList,title) = windowCmd.getServiceList(ns)
-        if applicationState.content_mode == globals.WINDOW_CM:
-            (contentList,title) = windowCmd.getConfigMapList(ns)
-        if applicationState.content_mode == globals.WINDOW_SECRET:
-            (contentList,title) = windowCmd.getSecretList(ns)
-        if applicationState.content_mode == globals.WINDOW_SF:
-            (contentList,title) = windowCmd.getStatefulSetList(ns)
-        if applicationState.content_mode == globals.WINDOW_RS:
-            (contentList,title) = windowCmd.getReplicaSetList(ns)
-        if applicationState.content_mode == globals.WINDOW_DS:
-            (contentList,title) = windowCmd.getDaemonSetList(ns)
-        if applicationState.content_mode == globals.WINDOW_CONTEXT:
-            (contentList,title) = windowCmd.getContextList()
+        (contentList,title) = windowCmd.getWindowContentAndTitle(applicationState.content_mode, ns,applicationState.selected_node)
                 
         podListArea.text=contentList
         podListAreaFrame.title=title
@@ -205,6 +257,10 @@ def _(event):
     executeCommand("window")
     #print('Control-A pressed, followed by Control-B')
 
+@kb.add('escape','0')
+def _(event):
+    appendToOutput("No window",cmdString="Alt-0")
+
 @kb.add('escape','1')
 def _(event):
     changeWindow("pod")
@@ -235,25 +291,64 @@ def _(event):
 
 @kb.add('escape','8')
 def _(event):
-    appendToOutput("No window",cmdString="Alt-8")
-    #changeWindow("context")
+    changeWindow("pvc")
 
 @kb.add('escape','9')
 def _(event):
-    appendToOutput("No window",cmdString="Alt-9")
-
-@kb.add('escape','0')
-def _(event):
-    appendToOutput("No window",cmdString="Alt-0")
+    changeWindow("pv")
 
 @kb.add('escape','1','escape','0')
 def _(event):
-    appendToOutput("No window",cmdString="Alt-10")
+    changeWindow("deployment")
 
 @kb.add('escape','1','escape','1')
 def _(event):
-    appendToOutput("No window",cmdString="Alt-11")
+    changeWindow("sc")
 
+@kb.add('escape','1','escape','2')
+def _(event):
+    changeWindow("job")
+
+@kb.add('escape','1','escape','3')
+def _(event):
+    changeWindow("cronjob")
+
+@kb.add('escape','1','escape','4')
+def _(event):
+    changeWindow("role")
+
+@kb.add('escape','1','escape','5')
+def _(event):
+    changeWindow("rolebinding")
+
+@kb.add('escape','1','escape','6')
+def _(event):
+    changeWindow("sa")
+
+@kb.add('escape','1','escape','7')
+def _(event):
+    changeWindow("pdb")
+
+@kb.add('escape','1','escape','8')
+def _(event):
+    changeWindow("route")
+
+
+@kb.add('escape','1','escape','9')
+def _(event):
+    changeWindow("ingress")
+
+@kb.add('escape','2','escape','0')
+def _(event):
+    changeWindow("node")
+
+@kb.add('escape','2','escape','1')
+def _(event):
+    changeWindow("crd")
+
+@kb.add('escape','2','escape','2')
+def _(event):
+    changeWindow("namespace")
 
 #search keyboard
 @kb.add('/')
@@ -307,20 +402,8 @@ def setCommandWindowTitle():
         selected_namespace = fields[0]
         selected_pod = " ".join(fields[1:])
     title = ""
-    if applicationState.content_mode == globals.WINDOW_POD:
-        title = "NS: %s, NODE: %s, POD: %s" % (selected_namespace,selected_node,selected_pod)
-    if applicationState.content_mode == globals.WINDOW_SVC:
-        title = "NS: %s, SERVICE: %s" % (selected_namespace,selected_pod)
-    if applicationState.content_mode == globals.WINDOW_CM:
-        title = "NS: %s, CONFIGMAP: %s" % (selected_namespace,selected_pod)
-    if applicationState.content_mode == globals.WINDOW_SECRET:
-        title = "NS: %s, SECRET: %s" % (selected_namespace,selected_pod)
-    if applicationState.content_mode == globals.WINDOW_SF:
-        title = "NS: %s, STATEFULSET: %s" % (selected_namespace,selected_pod)
-    if applicationState.content_mode == globals.WINDOW_RS:
-        title = "NS: %s, REPLICASET: %s" % (selected_namespace,selected_pod)
-    if applicationState.content_mode == globals.WINDOW_DS:
-        title = "NS: %s, DAEMONSET: %s" % (selected_namespace,selected_pod)
+    title = windowCmd.getCommandWindowTitle(applicationState.content_mode, selected_namespace, selected_node, selected_pod)
+
     if applicationState.content_mode == globals.WINDOW_CONTEXT:
         #select current context as title
         selected_pod = str(podListArea.buffer.document.current_line).strip()
@@ -409,11 +492,30 @@ def appendToOutput(text,cmdString="",overwrite=False):
     outputArea.buffer.cursor_down(30)
 
 
+def getShellCmd(namespace,cmdString):
+    
+    if cmdString.find("ku ") == 0 or cmdString.find("oc ") == 0:
+        cmdName = "kubectl"
+        if cmdString.find("oc ") == 0:
+            cmdName = "oc"
+        #command arguments af "oc" or "ku"
+        cmdArgs = cmdString[2:].strip()
+        #namespace argument added if not global resource like storageclass
+        namespaceArg = ""
+        if windowCmd.isGlobalResource(applicationState.content_mode) == False:
+            namespaceArg = " -n %s" % namespace        
+            
+        cmdString  = "shell %s %s %s" % (cmdName, namespaceArg, cmdArgs)
+    
+    return cmdString
+
+
 #command handler for shell
 def commandHander(buffer):
     #check incoming command
     cmdString = buffer.text
     executeCommand(cmdString)
+
 
 #actual command handler, can be called from other sources as well
 def executeCommand(cmdString):
@@ -425,61 +527,8 @@ def executeCommand(cmdString):
         return
 
     if cmdString == "help":
-        text="""KubeTerminal
+        text=helpText
 
-Helper tool for Kubernetes.
-
-This output window shows output of commands.
-"Selected pod/resource" is the resource where cursor is in the Resources window.
-
-Key bindings
-
-- ESC - exit program.
-- <alt-1>, show pods.
-- <alt-2>, show configmaps.
-- <alt-3>, show services.
-- <alt-4>, show secrets.
-- <alt-5>, show statefulsets.
-- <alt-6>, show replicasets.
-- <alt-7>, show daemonsets.
-- <ctrl-l>, show logs of currently selected pod (without any options).
-- <ctrl-d>, show description of currently selected resource (without any options).
-- <ctrl-y>, show YAML of currently selected resource.
-- <ctrl-r>, refresh UI.
-- <shift-g>, to the end of Output-window buffer.
-- <shift-w>, toggle wrapping in Output-window.
-- / -  search string in Output-window.
-
-Commands:
-
-- help - this help.
-- cert <data key> - show certificate of secret value using openssl.
-- clip - copy Output-window contents to clipboard.
-- cls - clear Output-window.
-- cm [<configmap-name>] [<key-name>] [--decode] - get configmaps in selected namespace. If first arg, then show yaml of given configmap. If also second arg, then show value of given key. If --decode is present, value is base64 decoded.
-- contexts - show current and available contexts.
-- decode <data key> - decode base64 encoded secret or configmap value.
-- delete [--force] - delete currently selected pod, optionally force delete.
-- describe <describe options> - show description of currently selected resource.
-- exec [-c <container_name>] <command> - exec command in currently selected pod.
-- ingress [<ingress name>] - show ingresses in selected namespace. If name is given, show yaml of ingress.
-- json - get JSON of currently selected resource.
-- ku <cmds/opts/args> - execute kubectl in currently selected namespace.
-- labels - show labels of currently selected pod.
-- logs [-c <container_name>] - show logs of currently selected pod.
-- node <node name> - show description of given node, or currently selected node.
-- oc <cmds/opts/args> - execute oc in currently selected namespace.
-- secret [<secret-name>] [<key-name>] [--decode | --cert] - get secrets in selected namespace. If first arg, then show yaml of given secret. If also second arg, then show value of given key. If --decode is present, value is base64 decoded. If --cert is present, value is assumed to be TLS certificate and openssl is used to decode it.
-- save [<filename>] - save Output-window contents to a file.
-- shell <any shell command> - executes any shell command.
-- svc [nodeport | <service name>] - show services in selected namespace. If nodeport, shows only NodePort services. If service name, shows yaml of the service.
-- top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
-- window [pod | svc | cm | secret | sf | rs | ds] - Set resource type for window.
-- workers [-d] - get worker node resource allocation. Use -d to describe all worker nodes.
-- wrap - toggle wrapping in Output-window.
-- yaml - get YAML of currently selected resource.
-
-"""
 
     def getResourceNameAndNamespaceName():
 
@@ -487,37 +536,32 @@ Commands:
             return (applicationState.resource_namespace,applicationState.resource_resourceName)
 
         podLine = applicationState.selected_pod
+
         namespace=""
         resourceName=""
         if podLine != "":
             fields=podLine.split()
-            if applicationState.current_namespace == "all-namespaces":
-                resourceName=fields[1]
-                namespace=fields[0]
-            else:
+
+            #if resource is global like storage class, 
+            #resource name is first field and there is no namespace
+            if windowCmd.isGlobalResource(applicationState.content_mode) == True:
                 resourceName=fields[0]
-                namespace=applicationState.current_namespace
+                namespace=""
+            else:
+                if applicationState.current_namespace == "all-namespaces":
+                    resourceName=fields[1]
+                    namespace=fields[0]
+                else:
+                    resourceName=fields[0]
+                    namespace=applicationState.current_namespace
+        
         return (namespace,resourceName)
 
     def isAllNamespaces():
         return applicationState.current_namespace == "all-namespaces"
 
     def getCmdString(cmd, resource):
-        resourceType = ""
-        if applicationState.content_mode == globals.WINDOW_POD:
-            resourceType = "pod"
-        if applicationState.content_mode == globals.WINDOW_CM:
-            resourceType = "cm"
-        if applicationState.content_mode == globals.WINDOW_SVC:
-            resourceType = "svc"
-        if applicationState.content_mode == globals.WINDOW_SECRET:
-            resourceType = "secret"
-        if applicationState.content_mode == globals.WINDOW_SF:
-            resourceType = "statefulset"
-        if applicationState.content_mode == globals.WINDOW_RS:
-            resourceType = "replicaset"
-        if applicationState.content_mode == globals.WINDOW_DS:
-            resourceType = "daemonset"
+        resourceType = windowCmd.getResourceType(applicationState.content_mode)
         
         if cmd == "describe":
             commandString ="ku describe %s %s" % (resourceType,resource)
@@ -591,6 +635,8 @@ Commands:
 
     doBase64decode = False
     isCertificate = False
+    #this command is used by decode and cert commands
+    #these secret or cm commands not shown in help
     if cmdString.find("secret") == 0 or cmdString.find("cm") == 0:
         kubeArg = "secret"
         if cmdString.find("cm")==0:
@@ -610,51 +656,15 @@ Commands:
                 doBase64decode=True
                 isCertificate = True
 
-    if cmdString.find("ku ") == 0:
-        namespace = " -n %s" % namespace        
-        kuArgs = cmdString[2:]
-        cmdString  = "shell kubectl%s %s" % (namespace, kuArgs.strip())
+    cmdString = getShellCmd(namespace, cmdString)
 
-    if cmdString.find("oc ") == 0:
-        namespace = " -n %s" % namespace        
-        kuArgs = cmdString[2:]
-        cmdString  = "shell oc%s %s" % (namespace, kuArgs.strip())
-
-    if cmdString.find("ingress") == 0:
-        if isAllNamespaces() == True:
-            namespace=""
-        else:
-            namespace = " -n %s" % namespace        
-        kuCmd = "get ingress "
-        kuArgs = cmdString.split()
-        if len(kuArgs) > 1:
-            kuCmd = kuCmd + kuArgs[1] + " -o yaml"
-        cmdString  = "shell %s %s %s" % (os.environ["KUBETERMINAL_CMD"], namespace, kuCmd)
-
-
-    if cmdString.find("svc") == 0:
-        if isAllNamespaces() == True:
-            namespace=""
-        else:
-            namespace = " -n %s" % namespace        
-        kuCmd = "get services "
-        kuArgs = cmdString.split()
-        if len(kuArgs) > 1:
-            if kuArgs[1] == "nodeport":
-                #show only nodeports
-                kuCmd = kuCmd + " | grep NodePort"
-            else:
-                kuCmd = kuCmd + kuArgs[1] + " -o yaml"
-        cmdString  = "shell %s %s %s" % (os.environ["KUBETERMINAL_CMD"], namespace, kuCmd)
-
-
-    if cmdString.find("node") == 0:
-        selectedNode=applicationState.selected_node
-        options=cmdString.replace("node","").strip()
-        text=nodes.describe(options,selectedNode)
-        if options == "":
-            options = selectedNode
-        cmdString = "describe node %s " % options
+    # if cmdString.find("node") == 0:
+    #     selectedNode=applicationState.selected_node
+    #     options=cmdString.replace("node","").strip()
+    #     text=nodes.describe(options,selectedNode)
+    #     if options == "":
+    #         options = selectedNode
+    #     cmdString = "describe node %s " % options
 
     if cmdString.find("delete") == 0:
         if applicationState.content_mode == globals.WINDOW_POD:
@@ -773,18 +783,29 @@ Commands:
     if cmdString.find("win") == 0:
         #window command to select content for "pod"-window
         cmdArgs = cmdString.split()
+        showAvailableWindowsHelpText = False
         if len(cmdArgs) > 1:
-            applicationState.content_mode = "WINDOW_%s" % (cmdArgs[1].upper())
-            #if window is context then update current context variable
-            if applicationState.content_mode == globals.WINDOW_CONTEXT:
-              applicationState.current_context = cmd.getCurrentContext()
-              #store namespace and resource name that are selected before moving to non resource window like context
-              (applicationState.resource_namespace,applicationState.resource_resourceName)=getResourceNameAndNamespaceName()
-              text = "Current context:\n" + applicationState.current_context
-              text = text+ "\n\nSelect context and enter command 'use-context' or use ctrl-u to change context."
-            updateUI("namespacepods")
+            windowName = "WINDOW_%s" % (cmdArgs[1].upper())
+            if windowCmd.windowExists(windowName) == True:
+                applicationState.content_mode = windowName#"WINDOW_%s" % (windowName)
+                #if window is context then update current context variable
+                if applicationState.content_mode == globals.WINDOW_CONTEXT:
+                    applicationState.current_context = cmd.getCurrentContext()
+                    #store namespace and resource name that are selected before moving to non resource window like context
+                    (applicationState.resource_namespace,applicationState.resource_resourceName)=getResourceNameAndNamespaceName()
+                    text = "Current context:\n" + applicationState.current_context
+                    text = text+ "\n\nSelect context and enter command 'use-context' or use ctrl-u to change context."
+                updateUI("namespacepods")
+            else:
+                windowArg = cmdArgs[1]
+                if windowArg != "list":
+                  text = "Window '%s' does not exist.\n\n" % cmdArgs[1]
+                showAvailableWindowsHelpText = True
         else:
-            text = "Available windows:\n"
+            showAvailableWindowsHelpText = True
+            text = ""
+        if showAvailableWindowsHelpText == True:
+            text = "%sAvailable windows:\n" % text
             for idx, resourceType in enumerate(globals.WINDOW_LIST):
                 text="%swindow %s (Alt-%d)\n" % (text,resourceType.lower().replace("window_",""),idx+1)
 

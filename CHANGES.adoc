@@ -1,31 +1,51 @@
+== 0.22
+
+* Added PersistentVolumeClaims to window-cmd.
+* Added PersistentVolumes to window-cmd.
+* Added Deployments to window-cmd.
+* Added StorageClasses to window-cmd.
+* Added Jobs to window-cmd.
+* Added CronJobs to window-cmd.
+* Added Roles to window-cmd.
+* Added RoleBindings to window-cmd.
+* Added ServiceAccounts to window-cmd.
+* Added PodDisruptionBudgets to window-cmd.
+* Added Routes to window-cmd.
+* Added Ingresses to window-cmd.
+* Added Nodes to window-cmd.
+* Added CustomResourceDefinitions to window-cmd.
+* Added Namespaces to window-cmd.
+* Removed node, svc and ingress commands.
+* Refactoring.
+
 == 0.21
 
-- Added contexts-command.
-- Shows help when starting KubeTerminal.
-- Added --no-help option to not show help when starting Kubeterminal.
+* Added contexts-command.
+* Shows help when starting KubeTerminal.
+* Added --no-help option to not show help when starting Kubeterminal.
 
 == 0.20
 
-- Shows now all pods after startup.
-- Added shortcuts to change window (Alt-1, Alt-2, and so on).
+* Shows now all pods after startup.
+* Added shortcuts to change window (Alt-1, Alt-2, and so on).
 
 == 0.19
 
-- Added --oc option to select oc-command instead of kubectl.
-- Check if user is forbidden to list nodes/namespace, if so then do not show them.
+* Added --oc option to select oc-command instead of kubectl.
+* Check if user is forbidden to list nodes/namespace, if so then do not show them.
 
 == 0.18
 
-- When using OpenShift, if namespaces fails, then use projects.
-- Added wrap-command and shift-g shortcut to toggle wrapping in Output-window.
+* When using OpenShift, if namespaces fails, then use projects.
+* Added wrap-command and shift-g shortcut to toggle wrapping in Output-window.
 
 == 0.17
 
-- Bug fix when using workers-command.
-- Added sf to window-cmd.
-- Added rs to window-cmd.
-- Added ds to window-cmd.
-- Internal changes.
+* Bug fix when using workers-command.
+* Added sf to window-cmd.
+* Added rs to window-cmd.
+* Added ds to window-cmd.
+* Internal changes.
 
 == 0.16
 

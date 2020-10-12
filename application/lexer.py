@@ -48,13 +48,11 @@ class PodStatusLexer(Lexer):
         return [(NAMED_COLORS["Green"],line)]
 
 
-    def cmWindowColors(self,line):
-        
+    def cmWindowColors(self,line):        
         #default green
         return [(NAMED_COLORS["Green"],line)]
 
-    def secretWindowColors(self,line):
-        
+    def secretWindowColors(self,line):        
         #default green
         return [(NAMED_COLORS["Green"],line)]
 
@@ -131,6 +129,134 @@ class PodStatusLexer(Lexer):
         #not current context, yellow
         return [(NAMED_COLORS["Yellow"],line)]
         
+    def persistentVolumeClaimsWindowColors(self,line):
+
+        #split line
+        fields = line.split()
+        #if third field is "Bound" then green
+        if fields[2] == "Bound":
+            return [(NAMED_COLORS["Green"],line)]
+
+        #default yellow
+        return [(NAMED_COLORS["Yellow"],line)]
+
+
+    def persistentVolumesWindowColors(self,line):
+
+        #split line
+        fields = line.split()
+        #if fifth field is "Bound" then green
+        if fields[4] == "Bound":
+            return [(NAMED_COLORS["Green"],line)]
+
+        #default yellow
+        return [(NAMED_COLORS["Yellow"],line)]
+
+    def deploymentWindowColors(self,line):
+
+        fields = line.split()
+        from .state import current_namespace
+        ready = "0/1"
+        try:
+            if current_namespace == "all-namespaces":
+                ready = fields[2]
+            else:
+                ready = fields[1]
+        except:
+            #not a number
+            return [(NAMED_COLORS["Yellow"],line)]
+
+        #ready-field shows 1/1 or similar
+        readyFields = ready.split("/")
+        current = int(readyFields[0])
+        desired = int(readyFields[1])
+        if current == desired:
+            return [(NAMED_COLORS["Green"],line)]
+
+        #default yellow
+        return [(NAMED_COLORS["Yellow"],line)]
+
+    def storageClassWindowColors(self,line):        
+        #default green
+        return [(NAMED_COLORS["Green"],line)]
+
+    def jobWindowColors(self,line):
+        fields = line.split()
+        from .state import current_namespace
+        ready = "0/1"
+        try:
+            if current_namespace == "all-namespaces":
+                ready = fields[2]
+            else:
+                ready = fields[1]
+        except:
+            #not a number
+            return [(NAMED_COLORS["Yellow"],line)]
+
+        #ready-field shows 1/1 or similar
+        readyFields = ready.split("/")
+        current = int(readyFields[0])
+        desired = int(readyFields[1])
+        if current == desired:
+            return [(NAMED_COLORS["Green"],line)]
+
+        #default yellow
+        return [(NAMED_COLORS["Yellow"],line)]
+
+    def cronJobWindowColors(self,line):        
+        #default green
+        return [(NAMED_COLORS["Green"],line)]
+
+    def roleWindowColors(self,line):        
+        #default green
+        return [(NAMED_COLORS["Green"],line)]
+
+    def roleBindingWindowColors(self,line):        
+        #default green
+        return [(NAMED_COLORS["Green"],line)]
+
+    def serviceAccountWindowColors(self,line):        
+        #default green
+        return [(NAMED_COLORS["Green"],line)]
+
+    def podDisruptionBudgetWindowColors(self,line):        
+        #default green
+        return [(NAMED_COLORS["Green"],line)]
+
+    def routeWindowColors(self,line):        
+        #default green
+        return [(NAMED_COLORS["Green"],line)]
+
+    def ingressWindowColors(self,line):        
+        #default green
+        return [(NAMED_COLORS["Green"],line)]
+
+    def nodeWindowColors(self,line):
+
+        #split line
+        fields = line.split()
+        #if fifth field is "Bound" then green
+        if fields[1] == "Ready":
+            return [(NAMED_COLORS["Green"],line)]
+
+        #default yellow
+        return [(NAMED_COLORS["Yellow"],line)]
+
+    def crdWindowColors(self,line):        
+        #default green
+        return [(NAMED_COLORS["Green"],line)]
+
+    def namespaceWindowColors(self,line):
+
+        #split line
+        fields = line.split()
+        #if fifth field is "Bound" then green
+        if fields[1] == "Active":
+            return [(NAMED_COLORS["Green"],line)]
+
+        #default yellow
+        return [(NAMED_COLORS["Yellow"],line)]
+
 
     def lex_document(self, document):
         #colors = list(sorted(NAMED_COLORS, key=NAMED_COLORS.get))
@@ -162,6 +288,52 @@ class PodStatusLexer(Lexer):
 
             if content_mode == globals.WINDOW_CONTEXT:
                 return self.contextWindowColors(line)
+
+            if content_mode == globals.WINDOW_PVC:
+                return self.persistentVolumeClaimsWindowColors(line)
+                
+            if content_mode == globals.WINDOW_PV:
+                return self.persistentVolumesWindowColors(line)
+
+            if content_mode == globals.WINDOW_DEPLOYMENT:
+                return self.deploymentWindowColors(line)
+
+            if content_mode == globals.WINDOW_SC:
+                return self.storageClassWindowColors(line)
+
+            if content_mode == globals.WINDOW_JOB:
+                return self.jobWindowColors(line)
+
+            if content_mode == globals.WINDOW_CRONJOB:
+                return self.cronJobWindowColors(line)
+
+            if content_mode == globals.WINDOW_ROLE:
+                return self.roleWindowColors(line)
+
+            if content_mode == globals.WINDOW_ROLEBINDING:
+                return self.roleBindingWindowColors(line)
+
+            if content_mode == globals.WINDOW_SA:
+                return self.serviceAccountWindowColors(line)
+
+            if content_mode == globals.WINDOW_PDB:
+                return self.podDisruptionBudgetWindowColors(line)
+
+            if content_mode == globals.WINDOW_ROUTE:
+                return self.routeWindowColors(line)
+
+            if content_mode == globals.WINDOW_INGRESS:
+                return self.ingressWindowColors(line)
+
+            if content_mode == globals.WINDOW_NODE:
+                return self.nodeWindowColors(line)
+
+            if content_mode == globals.WINDOW_CRD:
+                return self.crdWindowColors(line)
+
+            if content_mode == globals.WINDOW_NAMESPACE:
+                return self.namespaceWindowColors(line)
+
 
             #if document.current_line in line:
             #    return [(NAMED_COLORS["Black"],line)]
