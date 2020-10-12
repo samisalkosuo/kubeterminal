@@ -43,9 +43,11 @@ if args.oc == True:
 
 helpText = """KubeTerminal
 
-Helper tool for Kubernetes.
+Helper tool for Kubernetes and OpenShift.
 
-This output window shows output of commands.
+Use TAB to change focus to another window. 
+
+Output window shows output of commands.
 "Selected pod/resource" is the resource where cursor is in the Resources window.
 
 Key bindings
@@ -100,6 +102,7 @@ Commands:
 - save [<filename>] - save Output-window contents to a file.
 - shell <any shell command> - executes any shell command.
 - top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
+- version - Show 'kubectl' and 'oc' version information.
 - window [<window name> | list] - Set resource type for window. 'window list' lists available windows.
 - workers [-d] - get worker node resource allocation. Use -d to describe all worker nodes.
 - wrap - toggle wrapping in Output-window.
@@ -680,6 +683,11 @@ def executeCommand(cmdString):
     if cmdString.find("shell") == 0:
         shellCmd = cmdString.replace("shell","").strip()
         text=cmd.executeCmd(shellCmd)
+
+    if cmdString.find("version") == 0:
+        text1=cmd.executeCmd("kubectl version")
+        text2=cmd.executeCmd("oc version")
+        text = "Kubernetes:\n%s\nOpenShift:\n%s" % (text1, text2)
 
     if doBase64decode == True:
         #text is assumed to hold base64 string, from secret or cm command
