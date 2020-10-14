@@ -1,3 +1,8 @@
+== 0.24
+
+* Bug fixes.
+* Refactoring.
+
 == 0.23
 
 * Added version-command.

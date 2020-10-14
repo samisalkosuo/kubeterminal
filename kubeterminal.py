@@ -396,7 +396,7 @@ podListArea = TextArea(text="",
                 multiline=True,
                 wrap_lines=False,
                 scrollbar=enableScrollbar,
-                lexer=lexer.PodStatusLexer(),
+                lexer=lexer.ResourceWindowLexer(),
                 read_only=True
                 )
 
@@ -416,7 +416,7 @@ left_container = HSplit([upper_left_container,
 outputArea = TextArea(text="", 
                     multiline=True,
                     wrap_lines=False,
-                    lexer=lexer.OutputAreaLexer(),
+                    lexer=lexer.OutputWindowLexer(),
                     scrollbar=enableScrollbar,
                     read_only=True)
 outputArea.buffer.name = WindowName.output
@@ -530,6 +530,7 @@ def executeCommand(cmdString):
     refreshUIAfterCmd = False
     text=""
     cmdcmdString = cmdString.strip()
+    originalCmdString = cmdcmdString
     if cmdString == "":
         return
 
@@ -665,13 +666,13 @@ def executeCommand(cmdString):
 
     cmdString = getShellCmd(applicationState.current_namespace, namespace, cmdString)
 
-    # if cmdString.find("node") == 0:
-    #     selectedNode=applicationState.selected_node
-    #     options=cmdString.replace("node","").strip()
-    #     text=nodes.describe(options,selectedNode)
-    #     if options == "":
-    #         options = selectedNode
-    #     cmdString = "describe node %s " % options
+    #if directly using oc or ku command do not add namespace or anythig
+    if originalCmdString.find("ku ") == 0:
+        #kubectl
+        cmdString = originalCmdString.replace("ku","shell kubectl")
+    if originalCmdString.find("oc ") == 0:
+        #oc
+        cmdString = originalCmdString.replace("oc","shell oc")
 
     if cmdString.find("delete") == 0:
         if applicationState.content_mode == globals.WINDOW_POD:
