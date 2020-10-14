@@ -496,7 +496,7 @@ def appendToOutput(text,cmdString="",overwrite=False):
     outputArea.buffer.cursor_down(30)
 
 
-def getShellCmd(namespace,cmdString):
+def getShellCmd(current_namespace, namespace, cmdString):
     
     if cmdString.find("ku ") == 0 or cmdString.find("oc ") == 0:
         cmdName = "kubectl"
@@ -505,9 +505,12 @@ def getShellCmd(namespace,cmdString):
         #command arguments af "oc" or "ku"
         cmdArgs = cmdString[2:].strip()
         #namespace argument added if not global resource like storageclass
-        namespaceArg = ""
+        namespaceArg = ""        
         if windowCmd.isGlobalResource(applicationState.content_mode) == False:
-            namespaceArg = " -n %s" % namespace        
+            if current_namespace == "all-namespaces":
+                cmdArgs = "%s --all-namespaces" % cmdArgs
+            else:
+                namespaceArg = "-n %s" % namespace
             
         cmdString  = "shell %s %s %s" % (cmdName, namespaceArg, cmdArgs)
     
@@ -660,7 +663,7 @@ def executeCommand(cmdString):
                 doBase64decode=True
                 isCertificate = True
 
-    cmdString = getShellCmd(namespace, cmdString)
+    cmdString = getShellCmd(applicationState.current_namespace, namespace, cmdString)
 
     # if cmdString.find("node") == 0:
     #     selectedNode=applicationState.selected_node
