@@ -45,70 +45,83 @@ helpText = """KubeTerminal
 
 Helper tool for Kubernetes and OpenShift.
 
-Use TAB to change focus to another window. 
-
 Output window shows output of commands.
 "Selected pod/resource" is the resource where cursor is in the Resources window.
 
-Key bindings
-
-- ESC - exit program.
-- <alt-1>, show pods.
-- <alt-2>, show configmaps.
-- <alt-3>, show services.
-- <alt-4>, show secrets.
-- <alt-5>, show statefulsets.
-- <alt-6>, show replicasets.
-- <alt-7>, show daemonsets.
-- <alt-8>, show persistentvolumeclaims.
-- <alt-9>, show persistentvolumes.
-- <alt-10>, show deployments.
-- <alt-11>, show storageclasses.
-- <alt-12>, show jobs.
-- <alt-13>, show cronjobs.
-- <alt-14>, show roles.
-- <alt-15>, show rolebindings.
-- <alt-16>, show serviceaccounts.
-- <alt-17>, show poddisruptionbudgets.
-- <alt-18>, show routes.
-- <alt-19>, show ingresses.
-- <alt-20>, show nodes.
-- <alt-21>, show customresourcedefinitions.
-- <alt-22>, show namespaces.
-- <ctrl-l>, show logs of currently selected pod (without any options).
-- <ctrl-d>, show description of currently selected resource (without any options).
-- <ctrl-y>, show YAML of currently selected resource.
-- <ctrl-r>, refresh resource (pod etc.) list.
-- <shift-g>, to the end of Output-window buffer.
-- <shift-w>, toggle wrapping in Output-window.
-- / -  search string in Output-window.
+Key bindings:
+  ESC - exit program.
+  TAB - change focus to another window.
+  <ctrl-up> - resource window up one line.
+  <ctrl-down> - resource window down one line.
+  <alt-ctrl-up> - resource window page up.
+  <alt-ctrl-down> - resource window page down.
+  <alt-up> - output window page up.
+  <alt-down> - output window page down.
+  <alt-1> - show pods.
+  <alt-2> - show configmaps.
+  <alt-3> - show services.
+  <alt-4> - show secrets.
+  <alt-5> - show statefulsets.
+  <alt-6> - show replicasets.
+  <alt-7> - show daemonsets.
+  <alt-8> - show persistentvolumeclaims.
+  <alt-9> - show persistentvolumes.
+  <alt-10> - show deployments.
+  <alt-11> - show storageclasses.
+  <alt-12> - show jobs.
+  <alt-13> - show cronjobs.
+  <alt-14> - show roles.
+  <alt-15> - show rolebindings.
+  <alt-16> - show serviceaccounts.
+  <alt-17> - show poddisruptionbudgets.
+  <alt-18> - show routes.
+  <alt-19> - show ingresses.
+  <alt-20> - show nodes.
+  <alt-21> - show customresourcedefinitions.
+  <alt-22> - show namespaces.
+  <ctrl-l> - show logs of currently selected pod (without any options).
+  <ctrl-d> - show description of currently selected resource (without any options).
+  <ctrl-y> - show YAML of currently selected resource.
+  <ctrl-r> - refresh resource (pod etc.) list.
+  <shift-g> - to the end of Output-window buffer.
+  <shift-w> - toggle wrapping in Output-window.
+  / - search string in Output-window.
 
 Commands:
-
-- help - this help.
-- cert <data key> - show certificate of secret value using openssl.
-- clip - copy Output-window contents to clipboard.
-- cls - clear Output-window.
-- contexts - show current and available contexts.
-- decode <data key> - decode base64 encoded secret or configmap value.
-- delete [--force] - delete currently selected pod, optionally force delete.
-- describe <describe options> - show description of currently selected resource.
-- exec [-c <container_name>] <command> - exec command in currently selected pod.
-- json - get JSON of currently selected resource.
-- ku <cmds/opts/args> - execute kubectl in currently selected namespace.
-- labels - show labels of currently selected pod.
-- logs [-c <container_name>] - show logs of currently selected pod.
-- oc <cmds/opts/args> - execute oc in currently selected namespace.
-- save [<filename>] - save Output-window contents to a file.
-- shell <any shell command> - executes any shell command.
-- top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
-- version - Show 'kubectl' and 'oc' version information.
-- window [<window name> | list] - Set resource type for window. 'window list' lists available windows.
-- workers [-d] - get worker node resource allocation. Use -d to describe all worker nodes.
-- wrap - toggle wrapping in Output-window.
-- yaml - get YAML of currently selected resource.
+  help - this help.
+  cert <data key> - show certificate of secret value using openssl.
+  clip - copy Output-window contents to clipboard.
+  cls - clear Output-window.
+  contexts - show current and available contexts.
+  decode <data key> - decode base64 encoded secret or configmap value.
+  delete [--force] - delete currently selected pod, optionally force delete.
+  describe <describe options> - show description of currently selected resource.
+  exec [-c <container_name>] <command> - exec command in currently selected pod.
+  json - get JSON of currently selected resource.
+  ku <cmds/opts/args> - execute kubectl in currently selected namespace.
+  labels - show labels of currently selected pod.
+  logs [-c <container_name>] - show logs of currently selected pod.
+  oc <cmds/opts/args> - execute oc in currently selected namespace.
+  save [<filename>] - save Output-window contents to a file.
+  shell <any shell command> - executes any shell command.
+  top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
+  version - Show 'kubectl' and 'oc' version information.
+  window [<window name> | list] - Set resource type for window. 'window list' lists available windows.
+  workers [-d] - get worker node resource allocation. Use -d to describe all worker nodes.
+  wrap - toggle wrapping in Output-window.
+  yaml - get YAML of currently selected resource.
 
 """
+
+from enum import Enum
+class WindowName(Enum):
+    resource = "ResourceWindow"
+    output = "OutputWindow"
+    command = "CommandWindow"
+
+class Direction(Enum):
+    up = "up"
+    down = "down"
 
 
 applicationState = state#state.State()
@@ -241,13 +254,29 @@ def togglewrap_(event):
 def _(event):
     executeCommand("use-context")
 
+@kb.add('c-down')
+def _(event):
+    windowScroll(WindowName.resource, Direction.down)
+
+@kb.add('escape','c-down')
+def _(event):
+    windowScroll(WindowName.resource, Direction.down, page = True)
+
 @kb.add('c-up')
 def _(event):
-    executeCommand("use-context")
+    windowScroll(WindowName.resource, Direction.up)
+
+@kb.add('escape','c-up')
+def _(event):
+    windowScroll(WindowName.resource, Direction.up, page = True)
 
 @kb.add('escape','down')
 def _(event):
-    executeCommand("window")
+    windowScroll(WindowName.output, Direction.down, page = True)
+
+@kb.add('escape','up')
+def _(event):
+    windowScroll(WindowName.output, Direction.up, page = True)
 
 
 def changeWindow(windowName):
@@ -369,11 +398,12 @@ podListArea = TextArea(text="",
                 wrap_lines=False,
                 scrollbar=enableScrollbar,
                 lexer=lexer.PodStatusLexer(),
-                read_only=True                
+                read_only=True
                 )
 
 #add listener to cursor position changed
 podListArea.buffer.on_cursor_position_changed=Event(podListArea.buffer,podListCursorChanged)
+podListArea.buffer.name = WindowName.resource
 podListArea.window.cursorline = to_filter(True)
 podListAreaFrame = Frame(podListArea,title="Pods",width=podListWindowSize)
 
@@ -390,6 +420,7 @@ outputArea = TextArea(text="",
                     lexer=lexer.OutputAreaLexer(),
                     scrollbar=enableScrollbar,
                     read_only=True)
+outputArea.buffer.name = WindowName.output
 outputAreaFrame= Frame(outputArea,title="Output")
 
 content_container = VSplit([
@@ -408,6 +439,39 @@ content_container = VSplit([
     outputAreaFrame
 
 ])
+
+#scroll/move cursor in resource or output window
+def windowScroll(bufferName, direction, page = False):
+
+    for w in layout.get_visible_focusable_windows():
+        try:
+            buffer = w.content.buffer
+            linesToScroll = 1
+            if page == True:
+                #if page is true then scroll page up or down
+                renderInfo = w.render_info
+                #window height is number of lines in the window
+                windowHeight = renderInfo.window_height
+                if direction == Direction.down:
+                    if buffer.document.cursor_position_row < windowHeight:
+                      linesToScroll = 2 * windowHeight - 2
+                    else: 
+                      linesToScroll = windowHeight - 1
+                if direction == Direction.up:
+                    linesToScroll = windowHeight - 1
+                    if buffer.document.cursor_position_row > buffer.document.line_count - windowHeight:
+                      linesToScroll = 2 * windowHeight - 2
+
+            if (bufferName == WindowName.resource or bufferName == WindowName.output) and buffer.name == bufferName:
+                if direction == Direction.down:
+                    buffer.cursor_down(linesToScroll)
+                if direction == Direction.up:
+                    buffer.cursor_up(linesToScroll)
+
+        except:
+            #ignore errors, such as buffer not found in window
+            pass
+
 
 def appendToOutput(text,cmdString="",overwrite=False):
 
@@ -781,6 +845,8 @@ def toggleWrap():
     outputArea.wrap_lines = not outputArea.wrap_lines
 
 command_container = TextArea(text="", multiline=False,accept_handler=commandHander,get_line_prefix=commandPrompt)
+command_container.buffer.name = WindowName.command
+
 commandWindowFrame= Frame(command_container,title="KubeTerminal (Ctrl-d to describe pod, Ctrl-l to show logs, Esc to exit, Tab to switch focus and refresh UI, 'help' for help)",height=4)
 
 
