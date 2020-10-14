@@ -106,6 +106,7 @@ WINDOW_RESOURCE_TYPE = {
 
 #plural
 WINDOW_RESOURCES_WINDOW_TITLE = {
+            WINDOW_POD: "Pods",
             WINDOW_SVC: "Services",
             WINDOW_CM: "ConfigMaps",
             WINDOW_SECRET: "Secrets",

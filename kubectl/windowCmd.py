@@ -67,7 +67,7 @@ def getContextList():
 def getListAndTitle(resourceType, namespace):
     contentList=getResources(resourceType, namespace)
     podCount = len(contentList)
-    title="%d %s (ns: %s)" % (podCount, resourceType, namespace)
+    title="%d %s\n (ns: %s)" % (podCount, resourceType, namespace)
     return ("\n".join(contentList), title)
 
 
