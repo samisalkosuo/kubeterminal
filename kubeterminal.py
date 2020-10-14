@@ -51,12 +51,12 @@ Output window shows output of commands.
 Key bindings:
   ESC - exit program.
   TAB - change focus to another window.
-  <ctrl-up> - resource window up one line.
-  <ctrl-down> - resource window down one line.
-  <alt-ctrl-up> - resource window page up.
-  <alt-ctrl-down> - resource window page down.
-  <alt-up> - output window page up.
-  <alt-down> - output window page down.
+  <alt-u> - resource window up one line.
+  <alt-j> - resource window down one line.
+  <alt-i> - resource window page up.
+  <alt-k> - resource window page down.
+  <alt-o> - output window page up.
+  <alt-l> - output window page down.
   <alt-1> - show pods.
   <alt-2> - show configmaps.
   <alt-3> - show services.
@@ -250,31 +250,30 @@ def toendofoutputbuffer_(event):
 def togglewrap_(event):    
     toggleWrap()
 
-@kb.add('c-u')
-def _(event):
-    executeCommand("use-context")
-
-@kb.add('c-down')
+#window scroll keybindings use alt modified and letters uiojkl
+#because various terminals have their own keybindings that interfere
+#for example, powershell has ctrl-j and putty/screen did not accept ctrl - cursor keys
+@kb.add('escape','j')
 def _(event):
     windowScroll(WindowName.resource, Direction.down)
 
-@kb.add('escape','c-down')
+@kb.add('escape','k')
 def _(event):
     windowScroll(WindowName.resource, Direction.down, page = True)
 
-@kb.add('c-up')
+@kb.add('escape','u')
 def _(event):
     windowScroll(WindowName.resource, Direction.up)
 
-@kb.add('escape','c-up')
+@kb.add('escape','i')
 def _(event):
     windowScroll(WindowName.resource, Direction.up, page = True)
 
-@kb.add('escape','down')
+@kb.add('escape','l')
 def _(event):
     windowScroll(WindowName.output, Direction.down, page = True)
 
-@kb.add('escape','up')
+@kb.add('escape','o')
 def _(event):
     windowScroll(WindowName.output, Direction.up, page = True)
 
