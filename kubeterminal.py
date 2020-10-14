@@ -507,10 +507,10 @@ def getShellCmd(current_namespace, namespace, cmdString):
         #namespace argument added if not global resource like storageclass
         namespaceArg = ""        
         if windowCmd.isGlobalResource(applicationState.content_mode) == False:
-            if current_namespace == "all-namespaces":
-                cmdArgs = "%s --all-namespaces" % cmdArgs
-            else:
-                namespaceArg = "-n %s" % namespace
+            # if current_namespace == "all-namespaces":
+            #     cmdArgs = "%s --all-namespaces" % cmdArgs
+            # else:
+            namespaceArg = "-n %s" % namespace
             
         cmdString  = "shell %s %s %s" % (cmdName, namespaceArg, cmdArgs)
     
