@@ -40,7 +40,7 @@ image::kubeterminal_05.png[KubeTerminal_05,800]
 **  `python3.7 kubeterminal.py`
 * Basic commands:
 ** refresh pod list: &lt;ctrl-r>  
-** tab: switch windows and refresh pod list
+** tab: switch windows and refresh resource list
 ** use tab to go to Pods-window and:
 *** line up/down to select pod 
 *** describe pod: &lt;ctrl-d>
