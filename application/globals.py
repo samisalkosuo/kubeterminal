@@ -5,7 +5,7 @@ WINDOW_POD="WINDOW_POD"
 WINDOW_SVC="WINDOW_SVC"
 WINDOW_CM="WINDOW_CM"
 WINDOW_SECRET="WINDOW_SECRET"
-WINDOW_SF="WINDOW_SF"
+WINDOW_STS="WINDOW_STS"
 WINDOW_RS="WINDOW_RS"
 WINDOW_DS="WINDOW_DS"
 WINDOW_PVC="WINDOW_PVC"
@@ -31,7 +31,7 @@ WINDOW_LIST=[WINDOW_POD,
             WINDOW_SVC,
             WINDOW_CM,
             WINDOW_SECRET,
-            WINDOW_SF,
+            WINDOW_STS,
             WINDOW_RS,
             WINDOW_DS,
             WINDOW_PVC,
@@ -57,7 +57,7 @@ WINDOW_COMMAND_WINDOW_TITLE = {
             WINDOW_SVC: "SERVICE",
             WINDOW_CM: "CONFIGMAP",
             WINDOW_SECRET: "SECRET",
-            WINDOW_SF: "STATEFULSET",
+            WINDOW_STS: "STATEFULSET",
             WINDOW_RS: "REPLICASET",
             WINDOW_DS: "DAEMONSET",
             WINDOW_PVC: "PERSISTENTVOLUMECLAIM",
@@ -83,7 +83,7 @@ WINDOW_RESOURCE_TYPE = {
             WINDOW_SVC: "svc",
             WINDOW_CM: "cm",
             WINDOW_SECRET: "secret",
-            WINDOW_SF: "sf",
+            WINDOW_STS: "sts",
             WINDOW_RS: "rs",
             WINDOW_DS: "ds",
             WINDOW_PVC: "pvc",
@@ -110,7 +110,7 @@ WINDOW_RESOURCES_WINDOW_TITLE = {
             WINDOW_SVC: "Services",
             WINDOW_CM: "ConfigMaps",
             WINDOW_SECRET: "Secrets",
-            WINDOW_SF: "StatefulSets",
+            WINDOW_STS: "StatefulSets",
             WINDOW_RS: "ReplicaSets",
             WINDOW_DS: "DaemonSets",
             WINDOW_PVC: "PersistentVolumeClaims",
