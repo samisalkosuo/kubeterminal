@@ -1,6 +1,7 @@
 == 0.23
 
 * Added version-command.
+* Added scroll resource and output window keybindings.
 * Refactoring.
 
 == 0.22
