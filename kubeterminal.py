@@ -79,12 +79,12 @@ Key bindings:
   <alt-20> - show nodes.
   <alt-21> - show customresourcedefinitions.
   <alt-22> - show namespaces.
-  <ctrl-l> - show logs of currently selected pod (without any options).
-  <ctrl-d> - show description of currently selected resource (without any options).
-  <ctrl-y> - show YAML of currently selected resource.
-  <ctrl-r> - refresh resource (pod etc.) list.
-  <shift-g> - to the end of Output-window buffer.
-  <shift-w> - toggle wrapping in Output-window.
+  <alt-shift-l> - show logs of currently selected pod (without any options).
+  <alt-d> - show description of currently selected resource (without any options).
+  <alt-y> - show YAML of currently selected resource.
+  <alt-r> - refresh resource (pod etc.) list.
+  <alt-g> - to the end of Output-window buffer.
+  <alt-w> - toggle wrapping in Output-window.
   / - search string in Output-window.
 
 Commands:
@@ -221,32 +221,32 @@ def exit_(event):
     """
     event.app.exit()
 
-@kb.add('c-d')
+@kb.add('escape','d')
 def describepod_(event):
     applicationState.selected_pod=str(podListArea.buffer.document.current_line).strip()
     executeCommand("describe")
 
-@kb.add('c-y')
+@kb.add('escape','y')
 def yamlResource_(event):
     applicationState.selected_pod=str(podListArea.buffer.document.current_line).strip()
     executeCommand("yaml")
 
-@kb.add('c-l')
+@kb.add('escape','L')
 def logspod_(event):
     applicationState.selected_pod=str(podListArea.buffer.document.current_line).strip()
     executeCommand("logs")
 
-@kb.add('c-r')
+@kb.add('escape','r')
 def logspod_(event):
     #refresh pods
     updateState()
     updateUI("namespacepods")
 
-@kb.add('G')
+@kb.add('escape','g')
 def toendofoutputbuffer_(event):    
     outputArea.buffer.cursor_down(outputArea.document.line_count)
 
-@kb.add('W')
+@kb.add('escape','w')
 def togglewrap_(event):    
     toggleWrap()
 
@@ -282,11 +282,6 @@ def changeWindow(windowName):
     updateState()
     executeCommand("window %s" % windowName)
 
-#change window keyboard shortcuts
-@kb.add('escape','w')
-def _(event):
-    executeCommand("window")
-    #print('Control-A pressed, followed by Control-B')
 
 @kb.add('escape','0')
 def _(event):

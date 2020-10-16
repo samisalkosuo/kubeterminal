@@ -1,3 +1,9 @@
+== 0.25
+
+* Changed <shift-g> and <shift-w> keybindings to <alt-g> and <alt-w>.
+* Changed <ctrl-l> bindings to <alt-shift-l>.
+* Changed other <ctrl> bindings to <alt>.
+
 == 0.24
 
 * Bug fixes.
