@@ -27,7 +27,7 @@ image::kubeterminal_05.png[KubeTerminal_05,800]
 == Installation and usage
 
 * Python 3.
-** Python 3.7.2 and 3.6.8 used for development.
+** Python 3.8.1 used for development.
 ** Windows or Linux. 
 *** http://cmder.net/[cmder console] used in Windows 10.
 * Clone/download this repo.
