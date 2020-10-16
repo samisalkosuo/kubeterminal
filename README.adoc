@@ -108,9 +108,7 @@ I'm working with Kubernetes quite a lot and I found that there a few basic comma
 Writing these commands take time, and when in hurry, that time is noticeable. 
 
 I accidentally found https://github.com/astefanutti/kubebox[Kubebox] and immediately tried it. 
-But authentication failed when using IBM Cloud Private and self-signed certificate.
-
-BTW, https://www.ibm.com/cloud/private[IBM Cloud Private] is the main Kubernetes environment that I'm using https://hub.docker.com/r/ibmcom/icp-inception/[there's free Community Edition available at Docker Hub], you should try it :-).
+But authentication failed when using Kubernetes with self-signed certificate.
 
 Kubebox idea haunted until I remembered the existence of https://github.com/prompt-toolkit/python-prompt-toolkit[Python Prompt Toolkit] and remembered that it can be used to create full-screen terminal application. 
 
