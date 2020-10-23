@@ -36,6 +36,11 @@ class ResourceWindowLexer(Lexer):
             #default green
             return [(NAMED_COLORS["Green"],line)]
 
+        from .state import current_namespace
+        offset = 0
+        if current_namespace == "all-namespaces":
+            offset = 1
+
         #split line
         fields = line.split()
         value = None
@@ -50,7 +55,7 @@ class ResourceWindowLexer(Lexer):
             value = fields[4]
             desiredValue = "Bound"
         if contentMode == globals.WINDOW_PVC:
-            value = fields[2]
+            value = fields[1+offset]
             desiredValue = "Bound"
 
         if value != None and desiredValue != None:
@@ -68,10 +73,6 @@ class ResourceWindowLexer(Lexer):
             else:
                 return [(NAMED_COLORS["Green"],line)]
 
-        from .state import current_namespace
-        offset = 0
-        if current_namespace == "all-namespaces":
-            offset = 1
         array = [1,2]
         #check desired, current, etc fields
         if contentMode == globals.WINDOW_DS:
