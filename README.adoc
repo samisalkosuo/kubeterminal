@@ -61,7 +61,7 @@ Use following commands to copy the executable to local machine:
 
 ----
 docker create -it --name kubeterminal kazhar/kubeterminal bash
-docker cp kubeterminal:/root/dist/kubeterminal kubeterminal.bin
+docker cp kubeterminal:/kubeterminal kubeterminal.bin
 docker rm -fv kubeterminal
 ----
 

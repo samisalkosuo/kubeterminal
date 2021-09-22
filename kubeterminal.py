@@ -49,67 +49,71 @@ Output window shows output of commands.
 "Selected pod/resource" is the resource where cursor is in the Resources window.
 
 Key bindings:
-  ESC - exit program.
-  TAB - change focus to another window.
-  <alt-u> - resource window up one line.
-  <alt-j> - resource window down one line.
-  <alt-i> - resource window page up.
-  <alt-k> - resource window page down.
-  <alt-o> - output window page up.
-  <alt-l> - output window page down.
-  <alt-1> - show pods.
-  <alt-2> - show configmaps.
-  <alt-3> - show services.
-  <alt-4> - show secrets.
-  <alt-5> - show statefulsets.
-  <alt-6> - show replicasets.
-  <alt-7> - show daemonsets.
-  <alt-8> - show persistentvolumeclaims.
-  <alt-9> - show persistentvolumes.
-  <alt-10> - show deployments.
-  <alt-11> - show storageclasses.
-  <alt-12> - show jobs.
-  <alt-13> - show cronjobs.
-  <alt-14> - show roles.
-  <alt-15> - show rolebindings.
-  <alt-16> - show serviceaccounts.
-  <alt-17> - show poddisruptionbudgets.
-  <alt-18> - show routes.
-  <alt-19> - show ingresses.
-  <alt-20> - show nodes.
-  <alt-21> - show customresourcedefinitions.
-  <alt-22> - show namespaces.
-  <alt-shift-l> - show logs of currently selected pod (without any options).
-  <alt-d> - show description of currently selected resource (without any options).
-  <alt-y> - show YAML of currently selected resource.
-  <alt-r> - refresh resource (pod etc.) list.
-  <alt-g> - to the end of Output-window buffer.
-  <alt-w> - toggle wrapping in Output-window.
-  / - search string in Output-window.
+
+ESC           - exit program.
+TAB           - change focus to another window.
+<alt-u>       - resource window up one line.
+<alt-j>       - resource window down one line.
+<alt-i>       - resource window page up.
+<alt-k>       - resource window page down.
+<alt-o>       - output window page up.
+<alt-l>       - output window page down.
+<alt-0>       - list available windows.
+<alt-1>       - show pods.
+<alt-2>       - show configmaps.
+<alt-3>       - show services.
+<alt-4>       - show secrets.
+<alt-5>       - show statefulsets.
+<alt-6>       - show replicasets.
+<alt-7>       - show daemonsets.
+<alt-8>       - show persistentvolumeclaims.
+<alt-9>       - show persistentvolumes.
+<alt-10>      - show deployments.
+<alt-11>      - show storageclasses.
+<alt-12>      - show jobs.
+<alt-13>      - show cronjobs.
+<alt-14>      - show roles.
+<alt-15>      - show rolebindings.
+<alt-16>      - show serviceaccounts.
+<alt-17>      - show poddisruptionbudgets.
+<alt-18>      - show routes.
+<alt-19>      - show ingresses.
+<alt-20>      - show nodes.
+<alt-21>      - show customresourcedefinitions.
+<alt-22>      - show namespaces.
+<alt-shift-l> - show logs of currently selected pod (without any options).
+<alt-d>       - show description of currently selected resource (without any options).
+<alt-y>       - show YAML of currently selected resource.
+<alt-r>       - refresh resource (pod etc.) list.
+<alt-g>       - to the end of Output-window buffer.
+<alt-w>       - toggle wrapping in Output-window.
+/             - search string in Output-window.
 
 Commands:
-  help - this help.
-  cert <data key> - show certificate of secret value using openssl.
-  clip - copy Output-window contents to clipboard.
-  cls - clear Output-window.
-  contexts - show current and available contexts.
-  decode <data key> - decode base64 encoded secret or configmap value.
-  delete [--force] - delete currently selected pod, optionally force delete.
-  describe <describe options> - show description of currently selected resource.
-  exec [-c <container_name>] <command> - exec command in currently selected pod.
-  json - get JSON of currently selected resource.
-  ku <cmds/opts/args> - execute kubectl in currently selected namespace.
-  labels - show labels of currently selected pod.
-  logs [-c <container_name>] - show logs of currently selected pod.
-  oc <cmds/opts/args> - execute oc in currently selected namespace.
-  save [<filename>] - save Output-window contents to a file.
-  shell <any shell command> - executes any shell command.
-  top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
-  version - Show 'kubectl' and 'oc' version information.
-  window [<window name> | list] - Set resource type for window. 'window list' lists available windows.
-  workers [-d] - get worker node resource allocation. Use -d to describe all worker nodes.
-  wrap - toggle wrapping in Output-window.
-  yaml - get YAML of currently selected resource.
+
+help                                  - this help.
+all                                   - show all resources in namespaces.
+cert <data key>                       - show certificate of secret value using openssl.
+clip                                  - copy Output-window contents to clipboard.
+cls                                   - clear Output-window.
+contexts                              - show current and available contexts.
+decode <data key>                     - decode base64 encoded secret or configmap value.
+delete [--force]                      - delete currently selected pod, optionally force delete.
+describe <describe options>           - show description of currently selected resource.
+exec [-c <container_name>] <command>  - exec command in currently selected pod.
+json                                  - get JSON of currently selected resource.
+ku <cmds/opts/args>                   - execute kubectl in currently selected namespace.
+labels                                - show labels of currently selected pod.
+logs [-c <container_name>]            - show logs of currently selected pod.
+oc <cmds/opts/args>                   - execute oc in currently selected namespace.
+save [<filename>]                     - save Output-window contents to a file.
+shell <any shell command>             - executes any shell command.
+top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
+version                               - Show 'kubectl' and 'oc' version information.
+window [<window name> | list]         - Set resource type for window. 'window list' lists available windows.
+workers [-d]                          - get worker node resource allocation. Use -d to describe all worker nodes.
+wrap                                  - toggle wrapping in Output-window.
+yaml                                  - get YAML of currently selected resource.
 
 """
 
@@ -185,7 +189,24 @@ def updateUI(updateArea):
         contentList = ""
         title = ""
         (contentList,title) = windowCmd.getWindowContentAndTitle(applicationState.content_mode, ns,applicationState.selected_node)
+        
+        #TODO truncate long namespaces only in podlistarea, show full namespace in title window
+        # if isAllNamespaces() == True:
+        #     rows = contentList.split("\n")
+        #     newContentList = []
+        #     for row in rows:
+        #         columns = row.split()
+        #         namespace = columns[0]
+        #         namespace = (namespace[:25] + '..') if len(namespace) > 27 else namespace
+        #         namespace = namespace.ljust(27)
+
+        #         columns[0] = namespace
+        #         row = "   ".join(columns)
+        #         newContentList.append(row)
+            
                 
+        #     contentList = "\n".join(newContentList)
+
         podListArea.text=contentList
         podListAreaFrame.title=title
         setCommandWindowTitle()
@@ -285,7 +306,7 @@ def changeWindow(windowName):
 
 @kb.add('escape','0')
 def _(event):
-    appendToOutput("No window",cmdString="Alt-0")
+    executeCommand("windows")
 
 #key shortcuts to all windows alt-1 - alt-xx
 for index, windowName in enumerate(globals.WINDOW_LIST, start=1):
@@ -434,6 +455,9 @@ content_container = VSplit([
 
 ])
 
+def isAllNamespaces():
+    return applicationState.current_namespace == "all-namespaces"
+
 #scroll/move cursor in resource or output window
 def windowScroll(bufferName, direction, page = False):
 
@@ -560,8 +584,8 @@ def executeCommand(cmdString):
         
         return (namespace,resourceName)
 
-    def isAllNamespaces():
-        return applicationState.current_namespace == "all-namespaces"
+    # def isAllNamespaces():
+    #     return applicationState.current_namespace == "all-namespaces"
 
     def getCmdString(cmd, resource):
         resourceType = windowCmd.getResourceType(applicationState.content_mode)
@@ -668,6 +692,12 @@ def executeCommand(cmdString):
     if originalCmdString.find("oc ") == 0:
         #oc
         cmdString = originalCmdString.replace("oc","shell oc")
+
+    if cmdString.find("all") == 0:
+        ns = "-n %s" % namespace
+        if isAllNamespaces() == True:
+            ns = "-A"
+        cmdString = "shell oc get all %s" % ns
 
     if cmdString.find("delete") == 0:
         if applicationState.content_mode == globals.WINDOW_POD:

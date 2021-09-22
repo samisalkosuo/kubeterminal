@@ -1,3 +1,8 @@
+== 0.26
+
+* Added <alt-0> shortcut to show available windows.
+* Added all-command to show all resources in selected namespace.
+
 == 0.25
 
 * Changed <shift-g> and <shift-w> keybindings to <alt-g> and <alt-w>.
