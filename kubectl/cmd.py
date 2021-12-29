@@ -54,7 +54,14 @@ def executeBackgroudCmd(cmd):
 
     BackgroundProcess(cmd)
     return "Delete pod started in background. Refresh pod list to see status."       
-    
+
+def isAllNamespaceForbidden():
+    output = executeCmd("%s get namespaces" % kubectlCommand)
+    return output.find("Forbidden") > -1
+
+def isNodesForbidden():
+    output = executeCmd("%s get nodes" % kubectlCommand)
+    return output.find("Forbidden") > -1
 
 def deletePod(podName,namespace,force):
     cmd = kubectlCommand + " delete pod " + podName

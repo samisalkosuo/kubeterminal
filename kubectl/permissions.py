@@ -1,12 +1,10 @@
-from .cmd import executeCmd
-import os
+from .cmd import isAllNamespaceForbidden
+from .cmd import isNodesForbidden
 
 def isForbiddenAllNamespace():
-    output = executeCmd("%s get namespaces" % os.environ["KUBETERMINAL_CMD"])
-    return output.find("Forbidden") > -1
+    return isAllNamespaceForbidden()
 
 def isForbiddenNodes():
-    output = executeCmd("%s get nodes" % os.environ["KUBETERMINAL_CMD"])
-    return output.find("Forbidden") > -1
+    return isNodesForbidden()
 
 
