@@ -46,6 +46,116 @@ image::kubeterminal_05.png[KubeTerminal_05,800]
 *** describe pod: &lt;ctrl-d>
 *** show logs: &lt;ctrl-l>
 
+=== KubeTerminal help
+
+==== Command line options
+
+```
+usage: kubeterminal.py [-h] [--no-dynamic-title] [--compact-windows]
+                       [--even-more-compact-windows]
+                       [--kubeconfig KUBECONFIGPATH [KUBECONFIGPATH ...]]
+                       [--current-kubeconfig CURRENT_KUBECONFIG] [--oc]
+                       [--no-help] [--print-help]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --no-dynamic-title    Do not set command window title to show NS, node and
+                        pod.
+  --compact-windows     Set namespace, node and pod windows to more compact
+                        size.
+  --even-more-compact-windows
+                        Set namespace, node and pod windows to even more
+                        compact size.
+  --kubeconfig KUBECONFIGPATH [KUBECONFIGPATH ...]
+                        Set path(s) to kubeconfig auth file(s).
+  --current-kubeconfig CURRENT_KUBECONFIG
+                        Set path to current/active kubeconfig auth file.
+  --oc                  Use oc-command instead of kubectl.
+  --no-help             Do not show help when starting KubeTerminal.
+  --print-help          Print KubeTerminal help and exit.
+```
+
+==== Terminal commands
+
+```
+KubeTerminal
+
+Helper tool for Kubernetes and OpenShift.
+
+Output window shows output of commands.
+"Selected pod/resource" is the resource where cursor is in the Resources window.
+
+Key bindings:
+
+ESC           - exit program.
+TAB           - change focus to another window.
+<alt-u>       - resource window up one line.
+<alt-j>       - resource window down one line.
+<alt-i>       - resource window page up.
+<alt-k>       - resource window page down.
+<alt-o>       - output window page up.
+<alt-l>       - output window page down.
+<alt-0>       - list available windows.
+<alt-1>       - show pods.
+<alt-2>       - show configmaps.
+<alt-3>       - show services.
+<alt-4>       - show secrets.
+<alt-5>       - show statefulsets.
+<alt-6>       - show replicasets.
+<alt-7>       - show daemonsets.
+<alt-8>       - show persistentvolumeclaims.
+<alt-9>       - show persistentvolumes.
+<alt-10>      - show deployments.
+<alt-11>      - show storageclasses.
+<alt-12>      - show jobs.
+<alt-13>      - show cronjobs.
+<alt-14>      - show roles.
+<alt-15>      - show rolebindings.
+<alt-16>      - show serviceaccounts.
+<alt-17>      - show poddisruptionbudgets.
+<alt-18>      - show routes.
+<alt-19>      - show ingresses.
+<alt-20>      - show nodes.
+<alt-21>      - show customresourcedefinitions.
+<alt-22>      - show namespaces.
+<alt-shift-l> - show logs of currently selected pod (without any options).
+<alt-shift-r> - refresh namespace and node windows.
+<alt-d>       - show description of currently selected resource (without any options).
+<alt-y>       - show YAML of currently selected resource.
+<alt-r>       - refresh resource (pod etc.) list.
+<alt-g>       - to the end of Output-window buffer.
+<alt-w>       - toggle wrapping in Output-window.
+/             - search string in Output-window.
+
+Commands:
+
+help                                  - this help.
+all                                   - show all resources in namespaces.
+cert <data key>                       - show certificate of secret value using openssl.
+clip                                  - copy Output-window contents to clipboard.
+cls                                   - clear Output-window.
+contexts                              - show current and available contexts.
+decode <data key>                     - decode base64 encoded secret or configmap value.
+delete [--force]                      - delete currently selected pod, optionally force delete.
+describe                              - describe currently selected resource.
+exec [-c <container_name>] <command>  - exec command in currently selected pod.
+json                                  - get JSON of currently selected resource.
+ku <cmds/opts/args>                   - execute kubectl in currently selected namespace.
+kubeconfig [<config_index>]           - list kubeconfigs or set current config.
+labels                                - show labels of currently selected pod.
+logs [-c <container_name>]            - show logs of currently selected pod.
+oc <cmds/opts/args>                   - execute oc in currently selected namespace.
+save [<filename>]                     - save Output-window contents to a file.
+shell <any shell command>             - executes any shell command.
+top [-c | -l <label=value> | -n | -g] - show top of pods/containers/labels/nodes. Use -g to show graphics.
+version                               - Show 'kubectl' and 'oc' version information.
+window [<window name> | list]         - Set resource type for window. 'window list' lists available windows.
+workers [-d]                          - get worker node resource allocation. Use -d to describe all worker nodes.
+wrap                                  - toggle wrapping in Output-window.
+yaml                                  - get YAML of currently selected resource.
+
+```
+
 == Executable binary
 
 Executable binary is used to provide easy way to distribute KubeTerminal to servers without Internet connection.

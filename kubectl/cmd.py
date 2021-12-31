@@ -4,9 +4,13 @@ import threading
 import locale
 import os
 
-kubectlCommand = os.environ["KUBETERMINAL_CMD"]
+def getKubectlCommand():
+    cmd = os.environ["KUBETERMINAL_CMD"]
+    if "CURRENT_KUBECONFIG_FILE" in os.environ and os.environ["CURRENT_KUBECONFIG_FILE"] != None:
+        cmd = "%s --kubeconfig %s" % (cmd, os.environ["CURRENT_KUBECONFIG_FILE"])
+    return cmd
 
-#execute kubectl commands
+#execute commands
 def executeCmd(cmd):
     #TODO: if output is very long, this will hang until it is done
     output = ""
@@ -56,15 +60,15 @@ def executeBackgroudCmd(cmd):
     return "Delete pod started in background. Refresh pod list to see status."       
 
 def isAllNamespaceForbidden():
-    output = executeCmd("%s get namespaces" % kubectlCommand)
+    output = executeCmd("%s get namespaces" % getKubectlCommand())
     return output.find("Forbidden") > -1
 
 def isNodesForbidden():
-    output = executeCmd("%s get nodes" % kubectlCommand)
+    output = executeCmd("%s get nodes" % getKubectlCommand())
     return output.find("Forbidden") > -1
 
 def deletePod(podName,namespace,force):
-    cmd = kubectlCommand + " delete pod " + podName
+    cmd = getKubectlCommand() + " delete pod " + podName
     cmd=cmd + " -n " + namespace
     if (force == True):
         cmd=cmd + " --grace-period=0 --force"
@@ -73,13 +77,13 @@ def deletePod(podName,namespace,force):
 
 
 def describePod(podName,namespace,options):
-    cmd = kubectlCommand + " describe pod " + podName
+    cmd = getKubectlCommand() + " describe pod " + podName
     cmd=cmd +" -n "+namespace +" "+ options
     output = executeCmd(cmd)
     return output
 
 def getPodYaml(podName,namespace):
-    cmd = kubectlCommand + " get pod " + podName
+    cmd = getKubectlCommand() + " get pod " + podName
 
     cmd=cmd+" -n " + namespace
     cmd=cmd+" -o yaml "
@@ -89,7 +93,7 @@ def getPodYaml(podName,namespace):
     return output
 
 def getPodJSON(podName,namespace):
-    cmd = kubectlCommand + " get pod " + podName
+    cmd = getKubectlCommand() + " get pod " + podName
 
     cmd=cmd+" -n " + namespace
     cmd=cmd+" -o json "
@@ -101,7 +105,7 @@ def getPodJSON(podName,namespace):
 def getPodLabels(podName,namespace):
     resourceType = "pod"
 
-    cmd = kubectlCommand + " get %s %s -n %s --show-labels" % (resourceType, podName, namespace)
+    cmd = getKubectlCommand() + " get %s %s -n %s --show-labels" % (resourceType, podName, namespace)
     output = executeCmd(cmd)
 
     return output
@@ -110,22 +114,22 @@ def getTop(podName,namespace,cmdString,isAllNamespaces=False):
     cmd=None
     if cmdString.find("-c") > -1:
         #show top of selected pod and containers
-        cmd = kubectlCommand + " top pod %s -n %s --containers" % (podName,namespace)
+        cmd = getKubectlCommand() + " top pod %s -n %s --containers" % (podName,namespace)
 
     if cmdString.find("-n") > -1:
         #show top of nodes
-        cmd = kubectlCommand + " top nodes"
+        cmd = getKubectlCommand() + " top nodes"
 
     if cmdString.find("-l") > -1:
         #show top of given labels
         label=cmdString.split()[2]
-        cmd = kubectlCommand + " top pod  -n %s -l %s" % (namespace,label)
+        cmd = getKubectlCommand() + " top pod  -n %s -l %s" % (namespace,label)
 
     if cmd == None:
         if isAllNamespaces==True:
-            cmd = kubectlCommand + " top pods --all-namespaces"
+            cmd = getKubectlCommand() + " top pods --all-namespaces"
         else:
-            cmd = kubectlCommand + " top pods -n %s" % namespace
+            cmd = getKubectlCommand() + " top pods -n %s" % namespace
     
     output = executeCmd(cmd)
 
@@ -133,7 +137,7 @@ def getTop(podName,namespace,cmdString,isAllNamespaces=False):
 
 
 def execCmd(podName,namespace,command):
-    cmd = kubectlCommand + " exec " + podName
+    cmd = getKubectlCommand() + " exec " + podName
 
     cmd=cmd+" -n " + namespace
     if (command.find("-c")==0):
@@ -149,28 +153,26 @@ def execCmd(podName,namespace,command):
 
     return output
 
-
-
 def logsPod(podName,namespace,options):
-    cmd = kubectlCommand + " logs " + podName
+    cmd = getKubectlCommand() + " logs " + podName
     cmd=cmd +" -n "+namespace +" "+options
     output = executeCmd(cmd)
     return output
 
 def getNodes(noderole=None):
-    cmd = kubectlCommand + " get nodes "
+    cmd = getKubectlCommand() + " get nodes "
     if noderole != None:
        cmd = "%s -l node-role.kubernetes.io/%s" % (cmd,noderole)
     output = executeCmd(cmd+" --no-headers")
     return output
 
 def describeNode(nodeName):
-    cmd = kubectlCommand + " describe node \"%s\" " % nodeName
+    cmd = getKubectlCommand() + " describe node \"%s\" " % nodeName
     output = executeCmd(cmd)
     return output
 
 def getDescribeNodes(noderole=None):
-    cmd = kubectlCommand + " describe nodes "
+    cmd = getKubectlCommand() + " describe nodes "
     if noderole != None:
        cmd = "%s -l node-role.kubernetes.io/%s" % (cmd,noderole)
     output = executeCmd(cmd)
@@ -178,7 +180,7 @@ def getDescribeNodes(noderole=None):
 
 
 def getPods(namespace,nodeNameList=[]):
-    cmd = kubectlCommand + " get pods "
+    cmd = getKubectlCommand() + " get pods "
 
     if namespace == "all-namespaces":
         cmd=cmd+"--"+namespace
@@ -201,11 +203,11 @@ def getPods(namespace,nodeNameList=[]):
 
 def getNamespaces():
     namespaces=[]
-    output = executeCmd(kubectlCommand + " get namespaces --no-headers")
+    output = executeCmd(getKubectlCommand() + " get namespaces --no-headers")
     if output.find("namespaces is forbidden") > -1:
         #OpenShift does not allow normal users to list namespaces
         #OpenShift has resource project that can be used
-        output = executeCmd(kubectlCommand + " get projects --no-headers")
+        output = executeCmd(getKubectlCommand() + " get projects --no-headers")
         
     for line in output.split('\n'):
         fields = line.split()
@@ -220,7 +222,7 @@ def getResources(resourceType, namespace):
     if namespace == "all-namespaces":
         namespaceOption = ""
         allNamespaceOption = "--all-namespaces"
-    output = executeCmd(kubectlCommand + " %s get %s --no-headers %s" % (namespaceOption, resourceType, allNamespaceOption))
+    output = executeCmd(getKubectlCommand() + " %s get %s --no-headers %s" % (namespaceOption, resourceType, allNamespaceOption))
     for line in output.split('\n'):
         if len(line.split()) > 0:
             contentList.append(line)
@@ -232,7 +234,7 @@ def getResources(resourceType, namespace):
 
 def getContexts():
     contentList=[]
-    output = executeCmd(kubectlCommand + " config get-contexts -o name")
+    output = executeCmd(getKubectlCommand() + " config get-contexts -o name")
     for line in output.split('\n'):
         if len(line.split()) > 0:
             contentList.append(line)
@@ -240,5 +242,5 @@ def getContexts():
 
 def getCurrentContext():
     contentList=[]
-    output = executeCmd(kubectlCommand + " config current-context")
+    output = executeCmd(getKubectlCommand() + " config current-context")
     return output.strip()

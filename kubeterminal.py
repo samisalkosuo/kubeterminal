@@ -3,6 +3,7 @@ import base64
 import re
 import argparse 
 import os
+import pathlib
 
 from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
@@ -29,17 +30,39 @@ from kubectl import cmd
 from application import globals
 from kubectl import permissions
 
+
+def fileExistsType(filePath):
+    path = pathlib.Path(filePath)
+    if path.is_file() == False:
+        raise argparse.ArgumentTypeError('KUBECONFIG file %s does not exist.' % filePath)
+    else:
+        return filePath
+
 #CLI args
 parser = argparse.ArgumentParser()
 parser.add_argument('--no-dynamic-title', action="store_true", help='Do not set command window title to show NS, node and pod.')
 parser.add_argument('--compact-windows', action="store_true", help='Set namespace, node and pod windows to more compact size.')
 parser.add_argument('--even-more-compact-windows', action="store_true", help='Set namespace, node and pod windows to even more compact size.')
-parser.add_argument('--oc', action="store_true", help='Use oc-command insteand of kubectl.')
-parser.add_argument('--no-help', action="store_true", help='Do not show help when starting KubeTerminals.')
+parser.add_argument('--kubeconfig', action='append', nargs='+', type=fileExistsType, metavar='KUBECONFIGPATH', help='Set path(s) to kubeconfig auth file(s).')
+parser.add_argument('--current-kubeconfig', type=fileExistsType, help='Set path to current/active kubeconfig auth file.')
+parser.add_argument('--oc', action="store_true", help='Use oc-command instead of kubectl.')
+parser.add_argument('--no-help', action="store_true", help='Do not show help when starting KubeTerminal.')
+parser.add_argument('--print-help', action="store_true", help='Print KubeTerminal help and exit.')
 args = parser.parse_args()
 
 if args.oc == True:
     os.environ["KUBETERMINAL_CMD"] = "oc"
+
+if args.kubeconfig:
+    kubeconfigFiles = []
+    for kubeconfigArgs in args.kubeconfig:
+        for kubeconfigFile in kubeconfigArgs:
+            if not kubeconfigFile in kubeconfigFiles:
+                kubeconfigFiles.append(kubeconfigFile)
+    os.environ["KUBECONFIG_FILES"] = " ".join(kubeconfigFiles)
+
+if args.current_kubeconfig:
+    os.environ["CURRENT_KUBECONFIG_FILE"] = "%s" % args.current_kubeconfig
 
 helpText = """KubeTerminal
 
@@ -82,6 +105,7 @@ TAB           - change focus to another window.
 <alt-21>      - show customresourcedefinitions.
 <alt-22>      - show namespaces.
 <alt-shift-l> - show logs of currently selected pod (without any options).
+<alt-shift-r> - refresh namespace and node windows.
 <alt-d>       - show description of currently selected resource (without any options).
 <alt-y>       - show YAML of currently selected resource.
 <alt-r>       - refresh resource (pod etc.) list.
@@ -99,10 +123,11 @@ cls                                   - clear Output-window.
 contexts                              - show current and available contexts.
 decode <data key>                     - decode base64 encoded secret or configmap value.
 delete [--force]                      - delete currently selected pod, optionally force delete.
-describe <describe options>           - show description of currently selected resource.
+describe                              - describe currently selected resource.
 exec [-c <container_name>] <command>  - exec command in currently selected pod.
 json                                  - get JSON of currently selected resource.
 ku <cmds/opts/args>                   - execute kubectl in currently selected namespace.
+kubeconfig [<config_index>]           - list kubeconfigs or set current config.
 labels                                - show labels of currently selected pod.
 logs [-c <container_name>]            - show logs of currently selected pod.
 oc <cmds/opts/args>                   - execute oc in currently selected namespace.
@@ -116,6 +141,11 @@ wrap                                  - toggle wrapping in Output-window.
 yaml                                  - get YAML of currently selected resource.
 
 """
+
+if args.print_help == True:
+    print(helpText)
+    exit(0)
+
 
 from enum import Enum
 class WindowName(Enum):
@@ -135,15 +165,18 @@ applicationState.content_mode=globals.WINDOW_POD
 namespaceWindowSize=27
 nodeWindowSize=53
 podListWindowSize=80
+isCompactWindows=False
 if args.compact_windows == True:
     namespaceWindowSize=20
     nodeWindowSize=30
     podListWindowSize=50
+    isCompactWindows=True
 if args.even_more_compact_windows == True:
     namespaceWindowSize=20
     nodeWindowSize=10
     podListWindowSize=30
-if permissions.isForbiddenNodes() == True:
+    isCompactWindows=True
+if permissions.isForbiddenNodes() == True and isCompactWindows==False:
     namespaceWindowSize=80
 
 
@@ -258,10 +291,15 @@ def logspod_(event):
     executeCommand("logs")
 
 @kb.add('escape','r')
-def logspod_(event):
-    #refresh pods
+def refreshpods_(event):
+    #refresh pod window
     updateState()
     updateUI("namespacepods")
+
+@kb.add('escape','R')
+def refreshnsnodes_(event):
+    #refresh namespace/node windows
+    cliApplication.refreshNamespaceAndNodeWindows()
 
 @kb.add('escape','g')
 def toendofoutputbuffer_(event):    
@@ -352,31 +390,6 @@ def searchbuffer_(event):
     command_container.text="/"
     command_container.buffer.cursor_right()
 
-
-#content windows
-namespaceList = namespaces.list()
-nodesList = nodes.list()
-
-namespaceWindow = RadioList(namespaceList)
-windowHeight = len(namespaceList) + 2 
-if windowHeight > 8:
-    windowHeight = 8
-namespaceWindowFrame= Frame(namespaceWindow,title="Namespaces",height=windowHeight,width=namespaceWindowSize)
-
-nodeListArea = RadioList(nodesList)
-nodeWindowFrame= Frame(nodeListArea,title="Nodes",height=windowHeight,width=nodeWindowSize)
-#check permissions for nodes
-#normal OpenShift user does not see nodes nor namespaces other than his/her own.
-if permissions.isForbiddenNodes() == True:
-    #if user can not see Nodes do not show node window
-    upper_left_container = namespaceWindowFrame
-else:
-    upper_left_container = VSplit([namespaceWindowFrame, 
-                #HorizontalLine(),
-                #Window(height=1, char='-'),
-                nodeWindowFrame])
-
-
 def setCommandWindowTitle():
     selected_namespace=namespaceWindow.current_value
     selected_node=nodeListArea.current_value
@@ -406,54 +419,6 @@ def podListCursorChanged(buffer):
 
     if args.no_dynamic_title == False:
         setCommandWindowTitle()
-
-#pods window
-podListArea = TextArea(text="", 
-                multiline=True,
-                wrap_lines=False,
-                scrollbar=enableScrollbar,
-                lexer=lexer.ResourceWindowLexer(),
-                read_only=True
-                )
-
-#add listener to cursor position changed
-podListArea.buffer.on_cursor_position_changed=Event(podListArea.buffer,podListCursorChanged)
-podListArea.buffer.name = WindowName.resource
-podListArea.window.cursorline = to_filter(True)
-podListAreaFrame = Frame(podListArea,title="Pods",width=podListWindowSize)
-
-left_container = HSplit([upper_left_container, 
-                #HorizontalLine(),
-                #Window(height=1, char='-'),
-                podListAreaFrame])
-
-#print(namespaceWindow.current_value)
-#output area to output debug etc stuff
-outputArea = TextArea(text="", 
-                    multiline=True,
-                    wrap_lines=False,
-                    lexer=lexer.OutputWindowLexer(),
-                    scrollbar=enableScrollbar,
-                    read_only=True)
-outputArea.buffer.name = WindowName.output
-outputAreaFrame= Frame(outputArea,title="Output")
-
-content_container = VSplit([
-    # One window that holds the BufferControl with the default buffer on
-    # the left.
-    left_container,
-    # A vertical line in the middle. We explicitly specify the width, to
-    # make sure that the layout engine will not try to divide the whole
-    # width by three for all these windows. The window will simply fill its
-    # content by repeating this character.
-    #VerticalLine(),
-    #Window(width=1, char='|')
-    
-    # Display the text 'Hello world' on the right.
-    #Window(content=FormattedTextControl(text='Hello world, Escape to Quit'))
-    outputAreaFrame
-
-])
 
 def isAllNamespaces():
     return applicationState.current_namespace == "all-namespaces"
@@ -514,13 +479,17 @@ def appendToOutput(text,cmdString="",overwrite=False):
     outputArea.buffer.cursor_position=outputIndex#len(outputArea.text)
     outputArea.buffer.cursor_down(30)
 
-
+#TODO: combine this function, getKubectlCommand-function in cmd.py and also code in executeCommand-function.
 def getShellCmd(current_namespace, namespace, cmdString):
     
     if cmdString.find("ku ") == 0 or cmdString.find("oc ") == 0:
         cmdName = "kubectl"
         if cmdString.find("oc ") == 0:
             cmdName = "oc"
+        #add kubeconfig
+        if "CURRENT_KUBECONFIG_FILE" in os.environ and os.environ["CURRENT_KUBECONFIG_FILE"] != None:
+            cmdName = "%s --kubeconfig %s " % (cmdName, os.environ["CURRENT_KUBECONFIG_FILE"])
+
         #command arguments af "oc" or "ku"
         cmdArgs = cmdString[2:].strip()
         #namespace argument added if not global resource like storageclass
@@ -535,13 +504,11 @@ def getShellCmd(current_namespace, namespace, cmdString):
     
     return cmdString
 
-
 #command handler for shell
 def commandHander(buffer):
     #check incoming command
     cmdString = buffer.text
     executeCommand(cmdString)
-
 
 #actual command handler, can be called from other sources as well
 def executeCommand(cmdString):
@@ -583,9 +550,6 @@ def executeCommand(cmdString):
                     namespace=applicationState.current_namespace
         
         return (namespace,resourceName)
-
-    # def isAllNamespaces():
-    #     return applicationState.current_namespace == "all-namespaces"
 
     def getCmdString(cmd, resource):
         resourceType = windowCmd.getResourceType(applicationState.content_mode)
@@ -659,7 +623,6 @@ def executeCommand(cmdString):
         else:
             text = "ERROR: cert available only for secrets."
 
-
     doBase64decode = False
     isCertificate = False
     #this command is used by decode and cert commands
@@ -685,13 +648,19 @@ def executeCommand(cmdString):
 
     cmdString = getShellCmd(applicationState.current_namespace, namespace, cmdString)
 
-    #if directly using oc or ku command do not add namespace or anythig
+    #if directly using oc or ku command do not add namespace
+    #but add kubeconfig
     if originalCmdString.find("ku ") == 0:
         #kubectl
         cmdString = originalCmdString.replace("ku","shell kubectl")
+        if "CURRENT_KUBECONFIG_FILE" in os.environ and os.environ["CURRENT_KUBECONFIG_FILE"] != None:
+            cmdString = "%s --kubeconfig %s " % (cmdString, os.environ["CURRENT_KUBECONFIG_FILE"])
+
     if originalCmdString.find("oc ") == 0:
         #oc
         cmdString = originalCmdString.replace("oc","shell oc")
+        if "CURRENT_KUBECONFIG_FILE" in os.environ and os.environ["CURRENT_KUBECONFIG_FILE"] != None:
+            cmdString = "%s --kubeconfig %s " % (cmdString, os.environ["CURRENT_KUBECONFIG_FILE"])
 
     if cmdString.find("all") == 0:
         ns = "-n %s" % namespace
@@ -855,6 +824,45 @@ def executeCommand(cmdString):
       currentContext = cmd.getCurrentContext()
       text = "Current context:\n%s\n\n%s" % (currentContext, text)
 
+    if cmdString.find("kubeconfig") == 0:
+        cmdArgs = cmdString.split()
+        if len(cmdArgs) > 1:
+            if "KUBECONFIG_FILES" in os.environ:
+                #kubeconfig index given
+                index = int(cmdArgs[1])
+                if index == 0:
+                    #clear kubeconfig
+                    if "CURRENT_KUBECONFIG_FILE" in os.environ:
+                        del os.environ["CURRENT_KUBECONFIG_FILE"]                        
+                else:
+                    os.environ["CURRENT_KUBECONFIG_FILE"] = os.environ["KUBECONFIG_FILES"].split()[index-1]
+                cliApplication.refreshWindows()
+            else:
+                text = "%sNo kubeconfigs available." % (text)
+        else:
+            #list given kubeconfigs
+            currentContext = cmd.getCurrentContext()
+            text = "Current context:\n%s\n\n" % (currentContext)
+            text = "%sCurrent kubeconfig:\n" % (text)
+            if "CURRENT_KUBECONFIG_FILE" in os.environ and os.environ["CURRENT_KUBECONFIG_FILE"] != None:
+                text = "%s%s\n" % (text,os.environ["CURRENT_KUBECONFIG_FILE"])
+            else:
+                text = "%s<no current kubeconfig>\n" % (text)
+            text = "%s\nKubeconfigs:\n" % (text)
+            text = "%s0: <clear kubeconfig file>\n" % (text)
+            if "KUBECONFIG_FILES" in os.environ:
+                index = 1
+                for cfg in os.environ["KUBECONFIG_FILES"].split():
+                    text = "%s%d: %s\n" % (text, index, cfg)
+                    index = index + 1
+            else:
+                text = "%sNo kubeconfigs available." % (text)
+
+    #generic test command
+    if cmdString.find("testcmd") == 0:
+        #text = cliApplication.refreshWindows()
+        text="test command used during development"
+
     if text != "":
         appendToOutput(text,cmdString=cmdString)
         #appendToOutput("\n".join([outputArea.text,text]),cmd=cmd)
@@ -872,18 +880,129 @@ def clearOutputWindow():
 def toggleWrap():
     outputArea.wrap_lines = not outputArea.wrap_lines
 
+#TODO: clarify UI creation
+
+def setNamespaceAndNodeWindowContents():
+    global namespaceList, nodesList, namespaceWindow, windowHeight, namespaceWindowFrame
+    global nodeListArea, nodeWindowFrame, upper_left_container
+    namespaceList = namespaces.list()
+    nodesList = nodes.list()
+
+    namespaceWindow = RadioList(namespaceList)
+    windowHeight = len(namespaceList) + 2 
+    if windowHeight > 8:
+        windowHeight = 8
+    namespaceWindowFrame= Frame(namespaceWindow,title="Namespaces",height=windowHeight,width=namespaceWindowSize)
+
+    nodeListArea = RadioList(nodesList)
+    nodeWindowFrame= Frame(nodeListArea,title="Nodes",height=windowHeight,width=nodeWindowSize)
+    #check permissions for nodes
+    #normal OpenShift user does not see nodes nor namespaces other than his/her own.
+    if permissions.isForbiddenNodes() == True:
+        #if user can not see Nodes do not show node window
+        upper_left_container = namespaceWindowFrame
+    else:
+        upper_left_container = VSplit([namespaceWindowFrame, 
+                    #HorizontalLine(),
+                    #Window(height=1, char='-'),
+                    nodeWindowFrame])
+
+#initialize namespace and node windows
+setNamespaceAndNodeWindowContents()
+
+#pods window
+podListArea = TextArea(text="", 
+                multiline=True,
+                wrap_lines=False,
+                scrollbar=enableScrollbar,
+                lexer=lexer.ResourceWindowLexer(),
+                read_only=True
+                )
+
+#add listener to cursor position changed
+podListArea.buffer.on_cursor_position_changed=Event(podListArea.buffer,podListCursorChanged)
+podListArea.buffer.name = WindowName.resource
+podListArea.window.cursorline = to_filter(True)
+podListAreaFrame = Frame(podListArea,title="Pods",width=podListWindowSize)
+
+#output area to output debug etc stuff
+outputArea = TextArea(text="", 
+                    multiline=True,
+                    wrap_lines=False,
+                    lexer=lexer.OutputWindowLexer(),
+                    scrollbar=enableScrollbar,
+                    read_only=True)
+outputArea.buffer.name = WindowName.output
+outputAreaFrame= Frame(outputArea,title="Output")
+
+#command area
 command_container = TextArea(text="", multiline=False,accept_handler=commandHander,get_line_prefix=commandPrompt)
 command_container.buffer.name = WindowName.command
-
 commandWindowFrame= Frame(command_container,title="KubeTerminal (Ctrl-d to describe pod, Ctrl-l to show logs, Esc to exit, Tab to switch focus and refresh UI, 'help' for help)",height=4)
 
 
-root_container = HSplit([content_container, 
-     #           HorizontalLine(),
-                #Window(height=1, char='-'),
-                commandWindowFrame])
+def setLayoutContainers():
+    global left_container, content_container
+    global root_container, layout
+    
+    left_container = HSplit([upper_left_container, 
+                    #HorizontalLine(),
+                    #Window(height=1, char='-'),
+                    podListAreaFrame])
 
-layout = Layout(root_container)
+    content_container = VSplit([
+        # One window that holds the BufferControl with the default buffer on
+        # the left.
+        left_container,
+        # A vertical line in the middle. We explicitly specify the width, to
+        # make sure that the layout engine will not try to divide the whole
+        # width by three for all these windows. The window will simply fill its
+        # content by repeating this character.
+        #VerticalLine(),
+        #Window(width=1, char='|')
+        
+        # Display the text 'Hello world' on the right.
+        #Window(content=FormattedTextControl(text='Hello world, Escape to Quit'))
+        outputAreaFrame
+
+    ])
+
+    root_container = HSplit([content_container, 
+        #           HorizontalLine(),
+                    #Window(height=1, char='-'),
+                    commandWindowFrame])
+
+    layout = Layout(root_container)
+
+#from
+#https://stackoverflow.com/questions/47517328/prompt-toolkit-dynamically-add-and-remove-buffers-to-vsplit-or-hsplit
+class MyApplication(Application):
+
+    def __init__(self, layout, key_bindings, full_screen,mouse_support,before_render):
+        #Initialise with the first layout
+        super(MyApplication, self).__init__(
+            layout=layout,
+            key_bindings=key_bindings,
+            full_screen=full_screen,
+            mouse_support=mouse_support,
+            before_render=before_render
+        )
+
+    def refreshNamespaceAndNodeWindows(self):
+        setNamespaceAndNodeWindowContents()
+        setLayoutContainers()
+        # Update to use a new layout
+        self.layout = layout
+
+    def refreshWindows(self):
+        self.refreshNamespaceAndNodeWindows()
+
+        #refresh pod window
+        updateState()
+        updateUI("namespacepods")
+
+#set window containers
+setLayoutContainers()
 
 #call 'before render'-function only when app is started the first time
 #=> sets content to pod window
@@ -896,10 +1015,11 @@ def before_render(application):
         if args.no_help == False:
           executeCommand("help")
 
-app = Application(layout=layout,
+cliApplication = MyApplication(layout=layout,
                 key_bindings=kb,
                 full_screen=True,             
                 mouse_support=enableMouseSupport,
                 before_render=before_render
                 )
-app.run()
+
+cliApplication.run()

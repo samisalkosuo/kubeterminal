@@ -1,3 +1,9 @@
+== 0.27
+
+* Added --kubeconfig and --current-kubeconfig options and kubeconfig-command.
+* Added <alt-shift-r> shortcut to refresh namespace and node windows.
+* Refactoring.
+
 == 0.26
 
 * Added <alt-0> shortcut to show available windows.
