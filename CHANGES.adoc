@@ -2,6 +2,7 @@
 
 * Added --kubeconfig and --current-kubeconfig options and kubeconfig-command.
 * Added <alt-shift-r> shortcut to refresh namespace and node windows.
+* Improved performance by having some commands to execute as background processes.
 * Refactoring.
 
 == 0.26

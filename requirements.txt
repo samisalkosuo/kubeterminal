@@ -2,3 +2,4 @@ wcwidth==0.1.9
 ascii-graph==1.5.1
 prompt-toolkit==3.0.2
 pyperclip==1.7.0
+PyPubSub==4.0.3

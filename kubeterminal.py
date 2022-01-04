@@ -20,6 +20,8 @@ from prompt_toolkit import eventloop
 from prompt_toolkit.shortcuts import yes_no_dialog
 from prompt_toolkit.utils import Event
 from prompt_toolkit.filters import to_filter
+#pubsub
+from pubsub import pub
 
 #set command before importing 
 os.environ["KUBETERMINAL_CMD"] = "kubectl"
@@ -104,9 +106,9 @@ TAB           - change focus to another window.
 <alt-20>      - show nodes.
 <alt-21>      - show customresourcedefinitions.
 <alt-22>      - show namespaces.
-<alt-shift-l> - show logs of currently selected pod (without any options).
+<alt-shift-l> - show logs of currently selected pod.
 <alt-shift-r> - refresh namespace and node windows.
-<alt-d>       - show description of currently selected resource (without any options).
+<alt-d>       - show description of currently selected resource.
 <alt-y>       - show YAML of currently selected resource.
 <alt-r>       - refresh resource (pod etc.) list.
 <alt-g>       - to the end of Output-window buffer.
@@ -145,7 +147,6 @@ yaml                                  - get YAML of currently selected resource.
 if args.print_help == True:
     print(helpText)
     exit(0)
-
 
 from enum import Enum
 class WindowName(Enum):
@@ -456,7 +457,7 @@ def windowScroll(bufferName, direction, page = False):
             pass
 
 
-def appendToOutput(text,cmdString="",overwrite=False):
+def appendToOutput(text, cmdString = "", overwrite = False):
 
     if text is None or "No resources found" in text:    
         return
@@ -464,10 +465,10 @@ def appendToOutput(text,cmdString="",overwrite=False):
     #TODO: option to set UTC or local
     #now = datetime.datetime.utcnow().isoformat()
     now = datetime.datetime.now().isoformat()
-    if cmdString == "":
+    if cmdString == "" or cmdString == None:
         header = "=== %s ===" % now
     else:
-        header = "=== %s - %s ===" % (now,cmdString)
+        header = "=== %s %s ===" % (now,cmdString)
     
     if outputArea.text == "":        
         outputArea.text="\n".join([header,text,""])
@@ -487,8 +488,7 @@ def getShellCmd(current_namespace, namespace, cmdString):
         if cmdString.find("oc ") == 0:
             cmdName = "oc"
         #add kubeconfig
-        if "CURRENT_KUBECONFIG_FILE" in os.environ and os.environ["CURRENT_KUBECONFIG_FILE"] != None:
-            cmdName = "%s --kubeconfig %s " % (cmdName, os.environ["CURRENT_KUBECONFIG_FILE"])
+        cmdName = "%s %s" % (cmdName, cmd.getKubeConfigFile())
 
         #command arguments af "oc" or "ku"
         cmdArgs = cmdString[2:].strip()
@@ -569,14 +569,7 @@ def executeCommand(cmdString):
         if applicationState.content_mode == globals.WINDOW_POD:
             if namespace!="" and resourceName != "":
                 options=cmdString.replace("logs","")
-                cmdString = "logs " + resourceName
-                text=pods.logs(resourceName,namespace,options)                
-                index = text.find("choose one of: [")
-                if index > -1:
-                    text1 = text[0:index]
-                    text2 = text[index:]
-                    text2 = text2.replace("choose one of: [","choose one of:\n[")
-                    text = "%s\n%s" % (text1, text2)
+                cmd.getLogs(resourceName,namespace,options)                
         else:
             text = "ERROR: Logs are available only for pods."
 
@@ -651,29 +644,27 @@ def executeCommand(cmdString):
     #if directly using oc or ku command do not add namespace
     #but add kubeconfig
     if originalCmdString.find("ku ") == 0:
-        #kubectl
+        #kubectl        
         cmdString = originalCmdString.replace("ku","shell kubectl")
-        if "CURRENT_KUBECONFIG_FILE" in os.environ and os.environ["CURRENT_KUBECONFIG_FILE"] != None:
-            cmdString = "%s --kubeconfig %s " % (cmdString, os.environ["CURRENT_KUBECONFIG_FILE"])
+        cmdString = "%s %s " % (cmdString, cmd.getKubeConfigFile())
 
     if originalCmdString.find("oc ") == 0:
         #oc
         cmdString = originalCmdString.replace("oc","shell oc")
-        if "CURRENT_KUBECONFIG_FILE" in os.environ and os.environ["CURRENT_KUBECONFIG_FILE"] != None:
-            cmdString = "%s --kubeconfig %s " % (cmdString, os.environ["CURRENT_KUBECONFIG_FILE"])
+        cmdString = "%s %s " % (cmdString, cmd.getKubeConfigFile())
 
     if cmdString.find("all") == 0:
         ns = "-n %s" % namespace
         if isAllNamespaces() == True:
             ns = "-A"
-        cmdString = "shell oc get all %s" % ns
+        cmdString = "shell oc %s get all %s" % (cmd.getKubeConfigFile(), ns)
 
     if cmdString.find("delete") == 0:
         if applicationState.content_mode == globals.WINDOW_POD:
             force=False
             if (cmdString.find("--force") > -1):
                 force=True
-            text=pods.delete(resourceName,namespace,force)
+            text=cmd.deletePod(resourceName,namespace,force)
             cmdString = "delete pod %s" % resourceName
             #refreshUIAfterCmd = True
         else:
@@ -681,7 +672,8 @@ def executeCommand(cmdString):
 
     if cmdString.find("shell") == 0:
         shellCmd = cmdString.replace("shell","").strip()
-        text=cmd.executeCmd(shellCmd)
+        #text=cmd.executeCmd(shellCmd)
+        cmd.ExecuteCommandBackground(shellCmd, publishOutput = True)
 
     if cmdString.find("version") == 0:
         text1=cmd.executeCmd("kubectl version")
@@ -711,7 +703,7 @@ def executeCommand(cmdString):
         if applicationState.content_mode == globals.WINDOW_POD:
             command = cmdString.replace("exec","").strip()
             cmdString = "exec %s %s" % (resourceName,command)
-            text=pods.exec(resourceName,namespace,command)
+            text=cmd.execCmd(resourceName,namespace,command)
         else:
             text = "ERROR: exec is available only for pods."
 
@@ -862,6 +854,8 @@ def executeCommand(cmdString):
     if cmdString.find("testcmd") == 0:
         #text = cliApplication.refreshWindows()
         text="test command used during development"
+        pub.sendMessage('working',arg="started")
+
 
     if text != "":
         appendToOutput(text,cmdString=cmdString)
@@ -879,6 +873,46 @@ def clearOutputWindow():
 
 def toggleWrap():
     outputArea.wrap_lines = not outputArea.wrap_lines
+
+#pubsub listeners and subscriptions
+def listener_print_logs(arg,arg2 = None):
+    index = arg.find("choose one of: [")
+    if index > -1:
+        text1 = arg[0:index]
+        text2 = arg[index:]
+        text2 = text2.replace("choose one of: [","choose one of:\n[")
+        text = "%s\n%s" % (text1, text2)
+    else:
+        text = arg
+    appendToOutput(text, cmdString = arg2)
+pub.subscribe(listener_print_logs, 'print_logs')
+
+def listener_print_output(arg,arg2 = None):
+    appendToOutput(arg, cmdString = arg2)
+pub.subscribe(listener_print_output, 'print_output')
+
+backgroundProcessesInProgress = 0
+def listener_background_processing_start(arg):
+    global backgroundProcessesInProgress
+    backgroundProcessesInProgress = backgroundProcessesInProgress + 1
+    if (backgroundProcessesInProgress == 1):
+        outputAreaFrame.title = "Output (Background process in progress)"#: %s)" % (outputAreaFrame.title, arg)
+    if (backgroundProcessesInProgress > 1):
+        outputAreaFrame.title = "Output (%d background processes in progress)" % backgroundProcessesInProgress#: %s)" % (outputAreaFrame.title, arg)
+
+def listener_background_processing_stop(arg=None):
+    global backgroundProcessesInProgress
+    backgroundProcessesInProgress = backgroundProcessesInProgress - 1
+    if (backgroundProcessesInProgress == 0):
+        outputAreaFrame.title = "Output"
+    if (backgroundProcessesInProgress == 1):
+        outputAreaFrame.title = "Output (Background process in progress)"#: %s)" % (outputAreaFrame.title, arg)
+    if (backgroundProcessesInProgress > 1):
+        outputAreaFrame.title = "Output (%d background processes in progress)" % backgroundProcessesInProgress#: %s)" % (outputAreaFrame.title, arg)
+
+pub.subscribe(listener_background_processing_start, 'background_processing_start')
+pub.subscribe(listener_background_processing_stop, 'background_processing_stop')
+
 
 #TODO: clarify UI creation
 
@@ -1014,6 +1048,8 @@ def before_render(application):
         started = True
         if args.no_help == False:
           executeCommand("help")
+        #set started to env to be used in cmd.py
+        os.environ["KUBETERMINAL_IS_STARTED"] = "yes"
 
 cliApplication = MyApplication(layout=layout,
                 key_bindings=kb,

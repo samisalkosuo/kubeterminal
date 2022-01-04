@@ -3,15 +3,24 @@ import subprocess
 import threading
 import locale
 import os
+from pubsub import pub
+
+
+def getKubeConfigFile():
+    kubeconfigFile = os.environ.get("CURRENT_KUBECONFIG_FILE",None)
+    if kubeconfigFile != None:
+        return " --kubeconfig %s " % kubeconfigFile
+    else:
+        return ""
 
 def getKubectlCommand():
     cmd = os.environ["KUBETERMINAL_CMD"]
-    if "CURRENT_KUBECONFIG_FILE" in os.environ and os.environ["CURRENT_KUBECONFIG_FILE"] != None:
-        cmd = "%s --kubeconfig %s" % (cmd, os.environ["CURRENT_KUBECONFIG_FILE"])
+    cmd = "%s %s" % (cmd, getKubeConfigFile())
     return cmd
 
 #execute commands
 def executeCmd(cmd):
+
     #TODO: if output is very long, this will hang until it is done
     output = ""
     try:
@@ -30,33 +39,29 @@ def executeCmd(cmd):
         
     return output
 
+#Thanks go to: http://sebastiandahlgren.se/2014/06/27/running-a-method-as-a-background-thread-in-python/
+class ExecuteCommandBackground(object):
+    def __init__(self, cmd, publishOutput = False,  publishTopic = 'print_output'):
+        self.cmd = cmd
+        self.publishOutput = publishOutput
+        self.publishTopic = publishTopic
+        if self.publishOutput == True:
+            pub.sendMessage('background_processing_start',arg = self.cmd)
+        thread = threading.Thread(target=self.run, args=())
+        thread.daemon = True                            # Daemonize thread
+        thread.start()                                  # Start the execution
+
+    def run(self):
+        output = executeCmd(self.cmd)
+
+        if self.publishOutput == True:
+            pub.sendMessage('background_processing_stop',arg = self.cmd)
+            pub.sendMessage(self.publishTopic,arg = output, arg2 = self.cmd)
+
+
 def executeBackgroudCmd(cmd):
     '''Execute command in background thread. Does not print output.'''
-    #Thanks go to: http://sebastiandahlgren.se/2014/06/27/running-a-method-as-a-background-thread-in-python/
-    class BackgroundProcess(object):
-        """ Background process  class
-        The run() method will be started and it will run in the background
-        """
-
-        def __init__(self, cmd):
-            self.cmd = cmd
-
-            thread = threading.Thread(target=self.run, args=())
-            thread.daemon = True                            # Daemonize thread
-            thread.start()                                  # Start the execution
-
-        def run(self):
-            output = ""
-            try:
-                output = check_output(self.cmd,shell=True,stderr=subprocess.STDOUT,timeout=30)
-                output = output.decode('utf-8')
-            except subprocess.CalledProcessError as E:
-                output = E.output.decode('utf-8')
-            except subprocess.TimeoutExpired as E:
-                output = E.output.decode('utf-8')
-                output = "TIMEOUT when executing %s\n\n%s" % (cmd, output)
-
-    BackgroundProcess(cmd)
+    ExecuteCommandBackground(cmd)
     return "Delete pod started in background. Refresh pod list to see status."       
 
 def isAllNamespaceForbidden():
@@ -73,33 +78,6 @@ def deletePod(podName,namespace,force):
     if (force == True):
         cmd=cmd + " --grace-period=0 --force"
     output = executeBackgroudCmd(cmd)
-    return output
-
-
-def describePod(podName,namespace,options):
-    cmd = getKubectlCommand() + " describe pod " + podName
-    cmd=cmd +" -n "+namespace +" "+ options
-    output = executeCmd(cmd)
-    return output
-
-def getPodYaml(podName,namespace):
-    cmd = getKubectlCommand() + " get pod " + podName
-
-    cmd=cmd+" -n " + namespace
-    cmd=cmd+" -o yaml "
-    output = ""
-    output = executeCmd(cmd)
-
-    return output
-
-def getPodJSON(podName,namespace):
-    cmd = getKubectlCommand() + " get pod " + podName
-
-    cmd=cmd+" -n " + namespace
-    cmd=cmd+" -o json "
-    output = ""
-    output = executeCmd(cmd)
-
     return output
 
 def getPodLabels(podName,namespace):
@@ -153,11 +131,10 @@ def execCmd(podName,namespace,command):
 
     return output
 
-def logsPod(podName,namespace,options):
+def getLogs(podName,namespace,options):
     cmd = getKubectlCommand() + " logs " + podName
-    cmd=cmd +" -n "+namespace +" "+options
-    output = executeCmd(cmd)
-    return output
+    cmd = cmd +" -n "+namespace +" "+options
+    ExecuteCommandBackground(cmd, publishOutput = True,  publishTopic = 'print_logs')
 
 def getNodes(noderole=None):
     cmd = getKubectlCommand() + " get nodes "

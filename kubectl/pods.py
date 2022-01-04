@@ -1,23 +1,8 @@
 
-from .cmd import getNamespaces,getPods, describePod,logsPod,deletePod,getPodYaml,getPodJSON,execCmd
+from .cmd import getNamespaces,getPods
 from .cmd import getPodLabels,getTop
 from .nodes import getWorkerNodeNames
 
-def delete(podName,namespaceName,force):
-    return deletePod(podName,namespaceName,force)
-
-def describe(podName,namespaceName,options):
-    return describePod(podName,namespaceName,options)
-
-def logs(podName,namespaceName,options):
-    logText = logsPod(podName,namespaceName,options)
-    return logText
-
-def yaml(podName,namespaceName):
-    return getPodYaml(podName,namespaceName)
-
-def json(podName,namespaceName):
-    return getPodJSON(podName,namespaceName)
 
 def labels(podName,namespaceName):
     labelOutput = getPodLabels(podName,namespaceName)
@@ -106,9 +91,6 @@ def top(podName,namespaceName,cmdString,isAllNamespaces=False,doAsciiGraph=False
 
     return output
 
-def exec(podName,namespaceName,command):
-    return execCmd(podName,namespaceName,command)
-
 def list(namespace,nodehost=None):
     '''Return pods in namespace'''
     if nodehost == "all":
@@ -142,6 +124,14 @@ def list(namespace,nodehost=None):
 
     #sort list
     podsList.sort()
+
+    #TODO: do not show pods in openshift-* namespaces
+    # newPodsList = []
+    # for pod in podsList:
+    #     if pod.startswith("openshift-") == False:
+    #         newPodsList.append(pod)
+    # podsList = newPodsList
+
     podsListString = prettyPrint(podFieldsList(podsList),justify="L")
     #remove empty lines
     podsListString = "".join([s for s in podsListString.strip().splitlines(True) if s.strip()])
