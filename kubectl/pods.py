@@ -132,6 +132,9 @@ def list(namespace,nodehost=None):
     #         newPodsList.append(pod)
     # podsList = newPodsList
 
+    #TODO: make toggle: show only Running/Completed pods or vice versa
+    
+
     podsListString = prettyPrint(podFieldsList(podsList),justify="L")
     #remove empty lines
     podsListString = "".join([s for s in podsListString.strip().splitlines(True) if s.strip()])
