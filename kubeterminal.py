@@ -26,7 +26,7 @@ from pubsub import pub
 #set command before importing 
 os.environ["KUBETERMINAL_CMD"] = "kubectl"
 
-from kubectl import namespaces,pods,nodes,windowCmd
+from kubectl import pods,nodes,windowCmd
 from application import state,lexer
 from kubectl import cmd 
 from application import globals
@@ -919,7 +919,7 @@ pub.subscribe(listener_background_processing_stop, 'background_processing_stop')
 def setNamespaceAndNodeWindowContents():
     global namespaceList, nodesList, namespaceWindow, windowHeight, namespaceWindowFrame
     global nodeListArea, nodeWindowFrame, upper_left_container
-    namespaceList = namespaces.list()
+    namespaceList = cmd.listNamespaces()
     nodesList = nodes.list()
 
     namespaceWindow = RadioList(namespaceList)

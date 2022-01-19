@@ -221,3 +221,16 @@ def getCurrentContext():
     contentList=[]
     output = executeCmd(getKubectlCommand() + " config current-context")
     return output.strip()
+
+def listNamespaces():
+    '''Return list of tuples of namespaces: [(value,label),(value,label),...]'''
+    if isAllNamespaceForbidden() == True:
+        namespaces = []
+    else:
+        namespaces = [("all-namespaces","All namespaces")]
+    allNamespaces =  getNamespaces()
+    
+    for ns in allNamespaces:
+        namespaces.append((ns,ns))
+
+    return namespaces
