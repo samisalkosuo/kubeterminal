@@ -45,6 +45,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--no-dynamic-title', action="store_true", help='Do not set command window title to show NS, node and pod.')
 parser.add_argument('--compact-windows', action="store_true", help='Set namespace, node and pod windows to more compact size.')
 parser.add_argument('--even-more-compact-windows', action="store_true", help='Set namespace, node and pod windows to even more compact size.')
+parser.add_argument('--ns-window-size', type=int, default=53, help='Namespace window size. Default is 53 or less.')
 parser.add_argument('--kubeconfig', action='append', nargs='+', type=fileExistsType, metavar='KUBECONFIGPATH', help='Set path(s) to kubeconfig auth file(s).')
 parser.add_argument('--current-kubeconfig', type=fileExistsType, help='Set path to current/active kubeconfig auth file.')
 parser.add_argument('--oc', action="store_true", help='Use oc-command instead of kubectl.')
@@ -163,9 +164,22 @@ applicationState = state#state.State()
 
 applicationState.content_mode=globals.WINDOW_POD
 
+#get max node length in window
+nodesList = nodes.list()
+
+longestNodeLine=0
+for node in nodesList:
+    L = len(node[1])
+    if L > longestNodeLine:
+        longestNodeLine = L
+#+8 added to inclucde radiolist checkboxes and window borders and space at the end of line
+longestNodeLine = longestNodeLine + 8
+if longestNodeLine > args.ns_window_size:
+  longestNodeLine = args.ns_window_size
+
 namespaceWindowSize=27
-nodeWindowSize=53
-podListWindowSize=80
+nodeWindowSize = longestNodeLine
+podListWindowSize = namespaceWindowSize + longestNodeLine #pod list window size max 80
 isCompactWindows=False
 if args.compact_windows == True:
     namespaceWindowSize=20
