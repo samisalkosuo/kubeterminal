@@ -1,7 +1,7 @@
 from prompt_toolkit.lexers import Lexer
 from prompt_toolkit.styles.named_colors import NAMED_COLORS
 import re
-import application.globals as globals
+import kubeterminal.globals as globals
 
 class ResourceWindowLexer(Lexer):
 

@@ -26,11 +26,11 @@ from pubsub import pub
 #set command before importing 
 os.environ["KUBETERMINAL_CMD"] = "kubectl"
 
-from kubectl import pods,nodes,windowCmd
-from application import state,lexer
-from kubectl import cmd 
-from application import globals
-from kubectl import permissions
+from kubeterminal import pods,nodes,windowCmd
+from kubeterminal import state,lexer
+from kubeterminal import cmd 
+from kubeterminal import globals
+from kubeterminal import permissions
 
 
 def fileExistsType(filePath):

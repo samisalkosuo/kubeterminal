@@ -36,7 +36,9 @@ def executeCmd(cmd):
         #assume decoding error
         system_encoding = locale.getpreferredencoding()
         output = output.decode(system_encoding)
-        
+#    with open("output-file.txt", 'a') as out:
+#      out.write(output + '\n')
+    
     return output
 
 #Thanks go to: http://sebastiandahlgren.se/2014/06/27/running-a-method-as-a-background-thread-in-python/

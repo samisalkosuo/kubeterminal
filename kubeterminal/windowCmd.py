@@ -1,4 +1,5 @@
-from application import globals
+#from application import globals
+import kubeterminal.globals as globals
 from .pods import list as podList
 from .cmd import getResources, getContexts
 
