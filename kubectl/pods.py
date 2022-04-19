@@ -135,12 +135,15 @@ def list(namespace,nodehost=None):
     #TODO: make toggle: show only Running/Completed pods or vice versa
     
 
-    podsListString = prettyPrint(podFieldsList(podsList),justify="L")
+    #podsListString = prettyPrint(podFieldsList(podsList),justify="L")
     #remove empty lines
-    podsListString = "".join([s for s in podsListString.strip().splitlines(True) if s.strip()])
+    #podsListString = "".join([s for s in podsListString.strip().splitlines(True) if s.strip()])
+    
+    
+    #no prettyPrint, use output from get pods as it is
+    podsListString = "\n".join(podsList)
     return podsListString
-#        return "\n".join(podsList)
-        #return podsString
+
 
 def podFieldsList(podsList):
     #return list of pod dictioaries
@@ -203,8 +206,12 @@ def prettyPrint(table, justify = "R", columnWidth = 0):
             rowList = []
             for i in range(len(row)):
                 col = row[i]
+
             #for col in row:
-                columnWidth = allWidths[i]
+                if i >= len(allWidths):
+                    columnWidth = allWidths[len(allWidths)-1]
+                else:
+                  columnWidth = allWidths[i]
                 if justify == "R": # justify right
                     rowList.append(str(col).rjust(columnWidth))
                 elif justify == "L": # justify left
@@ -214,5 +221,5 @@ def prettyPrint(table, justify = "R", columnWidth = 0):
             outputStr += '  '.join(rowList) + "\n"
     except Exception as e:
         s = str(e)
-        outputStr="%s\n%s" % (s,table)
+        outputStr="jee%s\n%s" % (s,table)
     return outputStr

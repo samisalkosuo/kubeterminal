@@ -6,6 +6,8 @@ samples/
 kubeterminal_output_*
 .cert.tmp
 oc_login*
+local/
+output-file.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
