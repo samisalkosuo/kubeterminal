@@ -1,3 +1,8 @@
+== 0.28
+
+- Bug fix when using OpenShift 4.10 client.
+- Refactoring.
+
 == 0.27
 
 * Added --kubeconfig and --current-kubeconfig options and kubeconfig-command.

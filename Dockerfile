@@ -9,8 +9,7 @@ COPY requirements.txt .
 RUN python3.8 -m pip install -r requirements.txt
 
 COPY kubeterminal.py .
-COPY application/ ./application/
-COPY kubectl/ ./kubectl/
+COPY kubeterminal/ ./kubeterminal/
 
 RUN pyinstaller --onefile kubeterminal.py
 
