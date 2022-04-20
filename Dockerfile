@@ -1,12 +1,12 @@
 #create KubeTerminal Linux executable
 
-FROM kazhar/python:latest as build
+FROM kazhar/devcon:python-3.10.4 as build
 
 
 WORKDIR /root
 
 COPY requirements.txt .
-RUN python3.8 -m pip install -r requirements.txt
+RUN python3 -m pip install -r requirements.txt
 
 COPY kubeterminal.py .
 COPY kubeterminal/ ./kubeterminal/
