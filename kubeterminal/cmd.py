@@ -4,6 +4,8 @@ import threading
 import locale
 import os
 from pubsub import pub
+import base64
+import binascii
 
 
 def getKubeConfigFile():
@@ -43,10 +45,12 @@ def executeCmd(cmd):
 
 #Thanks go to: http://sebastiandahlgren.se/2014/06/27/running-a-method-as-a-background-thread-in-python/
 class ExecuteCommandBackground(object):
-    def __init__(self, cmd, publishOutput = False,  publishTopic = 'print_output'):
+    def __init__(self, cmd, publishOutput = False,  publishTopic = 'print_output', decodeBase64 = False, decodeCert = False):
         self.cmd = cmd
         self.publishOutput = publishOutput
         self.publishTopic = publishTopic
+        self.decodeBase64 = decodeBase64
+        self.decodeCert = decodeCert
         if self.publishOutput == True:
             pub.sendMessage('background_processing_start',arg = self.cmd)
         thread = threading.Thread(target=self.run, args=())
@@ -55,6 +59,31 @@ class ExecuteCommandBackground(object):
 
     def run(self):
         output = executeCmd(self.cmd)
+        if self.decodeBase64 == True:
+            output = output.replace("'","")
+            try:
+                #image_data = base64.b64decode(my_image_string, validate=True)
+                output = base64.b64decode(output,validate = True)
+                output = str(output,"utf8")
+            except binascii.Error:
+                #string is not base64
+                pass
+        if self.decodeCert == True:
+            #output is assumed to be certificate and openssl tool is assumed to present
+            try:
+                import subprocess,os
+                fName = ".cert.tmp"
+                certFile = open(fName,"w")
+                certFile.write(output)
+                certFile.close()
+                output = subprocess.check_output(["openssl", "x509", "-text", "-noout", 
+                                        "-in", fName],stderr=subprocess.STDOUT,timeout=30)
+                output = str(output,'utf-8')
+                if os.path.exists(fName):
+                    os.remove(fName)
+            except Exception as e:
+                #catch all errors
+                output = str(e)
 
         if self.publishOutput == True:
             pub.sendMessage('background_processing_stop',arg = self.cmd)

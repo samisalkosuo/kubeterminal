@@ -1,3 +1,8 @@
+== 0.29
+
+- Bug fix when decoding secret/configmap values and certificates.
+- Refactoring.
+
 == 0.28
 
 - Bug fix when using OpenShift 4.10 client.

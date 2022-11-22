@@ -120,11 +120,10 @@ Commands:
 
 help                                  - this help.
 all                                   - show all resources in namespaces.
-cert <data key>                       - show certificate of secret value using openssl.
 clip                                  - copy Output-window contents to clipboard.
 cls                                   - clear Output-window.
 contexts                              - show current and available contexts.
-decode <data key>                     - decode base64 encoded secret or configmap value.
+decode <data key> [cert}              - decode base64 encoded secret or configmap value, optionally decode certificate.
 delete [--force]                      - delete currently selected pod, optionally force delete.
 describe                              - describe currently selected resource.
 exec [-c <container_name>] <command>  - exec command in currently selected pod.
@@ -603,6 +602,8 @@ def executeCommand(cmdString):
         else:
             text = "ERROR: Labels are currently available only for pods."
 
+    doBase64decode = False
+    decodeCert = False
     if cmdString.find("decode") == 0:
         if applicationState.content_mode == globals.WINDOW_SECRET or applicationState.content_mode == globals.WINDOW_CM:
             cmdArgs = cmdString.split()
@@ -613,25 +614,17 @@ def executeCommand(cmdString):
                     cmdString = "secret "
                 if applicationState.content_mode == globals.WINDOW_CM:
                     cmdString = "cm "
-                cmdString = "%s %s %s --decode " % (cmdString,resourceName, key)
+                #cmdString = "%s %s %s --decode " % (cmdString,resourceName, key)
+                cmdString = "%s %s %s " % (cmdString,resourceName, key)
+                doBase64decode = True
+                if cmdArgs[-1] == "cert":
+                    #decode command includes 'cert' => use openssl to show cert
+                    decodeCert = True
             else:
                 text = "ERROR: No key name given."
         else:
             text = "ERROR: Decode available only for secrets and configmaps."
 
-    if cmdString.find("cert") == 0:
-        if applicationState.content_mode == globals.WINDOW_SECRET:
-            cmdArgs = cmdString.split()
-            if len(cmdArgs) > 1:
-                key = cmdArgs[1]
-                cmdString = "secret %s %s --cert " % (resourceName, key)
-            else:
-                text = "ERROR: No key name given."
-        else:
-            text = "ERROR: cert available only for secrets."
-
-    doBase64decode = False
-    isCertificate = False
     #this command is used by decode and cert commands
     #these secret or cm commands not shown in help
     if cmdString.find("secret") == 0 or cmdString.find("cm") == 0:
@@ -647,11 +640,6 @@ def executeCommand(cmdString):
             jsonPath = cmdStringList[2]
             jsonPath = jsonPath.replace(".","\\.")
             cmdString = "ku get %s %s -o jsonpath='{.data.%s}'" % (kubeArg, cmdStringList[1], jsonPath)
-            if len(cmdStringList) == 4 and cmdStringList[3] == "--decode":
-                doBase64decode=True
-            if kubeArg == "secret" and len(cmdStringList) == 4 and cmdStringList[3] == "--cert":
-                doBase64decode=True
-                isCertificate = True
 
     cmdString = getShellCmd(applicationState.current_namespace, namespace, cmdString)
 
@@ -687,31 +675,12 @@ def executeCommand(cmdString):
     if cmdString.find("shell") == 0:
         shellCmd = cmdString.replace("shell","").strip()
         #text=cmd.executeCmd(shellCmd)
-        cmd.ExecuteCommandBackground(shellCmd, publishOutput = True)
+        cmd.ExecuteCommandBackground(shellCmd, publishOutput = True,decodeBase64 = doBase64decode, decodeCert = decodeCert)
 
     if cmdString.find("version") == 0:
         text1=cmd.executeCmd("kubectl version")
         text2=cmd.executeCmd("oc version")
         text = "Kubernetes:\n%s\nOpenShift:\n%s" % (text1, text2)
-
-    if doBase64decode == True:
-        #text is assumed to hold base64 string, from secret or cm command
-        text = text.replace("'","")
-        text = base64.b64decode(text)
-        text = str(text,"utf8")
-    
-    if isCertificate == True:
-        #text is assumed to be certificate and openssl tool is assumed to present
-        import subprocess,os
-        fName = ".cert.tmp"
-        certFile = open(fName,"w")
-        certFile.write(text)
-        certFile.close()
-        text = subprocess.check_output(["openssl", "x509", "-text", "-noout", 
-                                "-in", fName],stderr=subprocess.STDOUT,timeout=30)
-        text = str(text,'utf-8')
-        if os.path.exists(fName):
-            os.remove(fName)
 
     if cmdString.find("exec") == 0:
         if applicationState.content_mode == globals.WINDOW_POD:
@@ -735,7 +704,6 @@ def executeCommand(cmdString):
         if topCmd.find("-g") > -1:
             doAsciiGraph = True
             topCmd = topCmd.replace("-g","")
-
         
         text=pods.top(resourceName,namespace,topCmd,isAllNamespaces(),doAsciiGraph)
 
