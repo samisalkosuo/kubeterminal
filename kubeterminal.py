@@ -59,9 +59,11 @@ if args.oc == True:
 kubeconfigFiles = []
 #find all kubeconfig-files
 #assume all are named kubeconfig
-from pathlib import Path
-for path in Path('/').rglob('kubeconfig'):
-    kubeconfigFiles.append(str(path))
+path = "/"
+for root,d_names,f_names in os.walk(path):
+    for f in f_names:
+        if f == "kubeconfig":
+            kubeconfigFiles.append(os.path.join(root, f))
 
 if args.kubeconfig:
 #    kubeconfigFiles = []
