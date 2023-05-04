@@ -27,7 +27,7 @@ image::kubeterminal_05.png[KubeTerminal_05,800]
 == Installation and usage
 
 * Python 3.
-** Python 3.8.1 used for development.
+** Python 3.10.8 used for development.
 ** Windows or Linux. 
 *** http://cmder.net/[cmder console] used in Windows 10.
 * Clone/download this repo.
@@ -37,7 +37,7 @@ image::kubeterminal_05.png[KubeTerminal_05,800]
 ** Install `openssl` in order to view certificates.
 * Login to Kubernetes cluster before using KubeTerminal.
 * Start KubeTerminal:
-**  `python3.7 kubeterminal.py`
+**  `python kubeterminal.py`
 * Basic commands:
 ** refresh pod list: &lt;ctrl-r>  
 ** tab: switch windows and refresh resource list
@@ -78,6 +78,7 @@ optional arguments:
 ==== Terminal commands
 
 ```
+=== 2023-05-04T14:53:50.140344 help ===
 KubeTerminal
 
 Helper tool for Kubernetes and OpenShift.
@@ -118,9 +119,11 @@ TAB           - change focus to another window.
 <alt-20>      - show nodes.
 <alt-21>      - show customresourcedefinitions.
 <alt-22>      - show namespaces.
-<alt-shift-l> - show logs of currently selected pod (without any options).
+<alt-c>       - show current kubeconfig and a list of available kubeconfigs.
+<alt-c-NR>    - select kubeconfig using a number NR. Get number using <alt-c> or kubeconfig.
+<alt-shift-l> - show logs of currently selected pod.
 <alt-shift-r> - refresh namespace and node windows.
-<alt-d>       - show description of currently selected resource (without any options).
+<alt-d>       - show description of currently selected resource.
 <alt-y>       - show YAML of currently selected resource.
 <alt-r>       - refresh resource (pod etc.) list.
 <alt-g>       - to the end of Output-window buffer.
@@ -131,11 +134,10 @@ Commands:
 
 help                                  - this help.
 all                                   - show all resources in namespaces.
-cert <data key>                       - show certificate of secret value using openssl.
 clip                                  - copy Output-window contents to clipboard.
 cls                                   - clear Output-window.
 contexts                              - show current and available contexts.
-decode <data key>                     - decode base64 encoded secret or configmap value.
+decode <data key> [cert]              - decode base64 encoded secret or configmap value, optionally decode certificate.
 delete [--force]                      - delete currently selected pod, optionally force delete.
 describe                              - describe currently selected resource.
 exec [-c <container_name>] <command>  - exec command in currently selected pod.
@@ -153,6 +155,8 @@ window [<window name> | list]         - Set resource type for window. 'window li
 workers [-d]                          - get worker node resource allocation. Use -d to describe all worker nodes.
 wrap                                  - toggle wrapping in Output-window.
 yaml                                  - get YAML of currently selected resource.
+
+
 
 ```
 

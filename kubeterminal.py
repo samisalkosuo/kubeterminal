@@ -56,16 +56,26 @@ args = parser.parse_args()
 if args.oc == True:
     os.environ["KUBETERMINAL_CMD"] = "oc"
 
+kubeconfigFiles = []
+#find all kubeconfig-files
+#assume all are named kubeconfig
+from pathlib import Path
+for path in Path('/').rglob('kubeconfig'):
+    kubeconfigFiles.append(str(path))
+
 if args.kubeconfig:
-    kubeconfigFiles = []
+#    kubeconfigFiles = []
     for kubeconfigArgs in args.kubeconfig:
         for kubeconfigFile in kubeconfigArgs:
             if not kubeconfigFile in kubeconfigFiles:
                 kubeconfigFiles.append(kubeconfigFile)
-    os.environ["KUBECONFIG_FILES"] = " ".join(kubeconfigFiles)
+os.environ["KUBECONFIG_FILES"] = " ".join(kubeconfigFiles)
 
 if args.current_kubeconfig:
     os.environ["CURRENT_KUBECONFIG_FILE"] = "%s" % args.current_kubeconfig
+else:
+    os.environ["CURRENT_KUBECONFIG_FILE"] = "%s" % kubeconfigFiles[0]
+
 
 helpText = """KubeTerminal
 
@@ -107,6 +117,8 @@ TAB           - change focus to another window.
 <alt-20>      - show nodes.
 <alt-21>      - show customresourcedefinitions.
 <alt-22>      - show namespaces.
+<alt-c>       - show current kubeconfig and a list of available kubeconfigs.
+<alt-c-NR>    - select kubeconfig using a number NR. Get number using <alt-c> or kubeconfig.
 <alt-shift-l> - show logs of currently selected pod.
 <alt-shift-r> - refresh namespace and node windows.
 <alt-d>       - show description of currently selected resource.
@@ -355,11 +367,34 @@ def changeWindow(windowName):
     updateState()
     executeCommand("window %s" % windowName)
 
+@kb.add('escape','c')
+def _(event):
+    executeCommand("kubeconfig")
+#key shortcuts to kubeconfigs
+for index, windowName in enumerate(kubeconfigFiles, start=1):
+    if index < 10:
+      #Alt-c - 1 - 9
+      @kb.add('escape','c','escape',str(index))
+      def _(event):
+        keySequence = event.key_sequence
+        if len(keySequence) == 4:
+            kubeconfigIndex = int(keySequence[3].key)
+            executeCommand("kubeconfig %d" % kubeconfigIndex)
+    else:
+      #Alt-c - 10 - 99
+      numbers = str(index)
+      @kb.add('escape','c','escape',numbers[0],'escape',numbers[1])
+      def _(event):
+        keySequence = event.key_sequence
+        if len(keySequence) == 6:
+            ki1 = int(keySequence[3].key) 
+            ki2 = int(keySequence[5].key) 
+            kubeconfigIndex = int("%d%d" % (ki1, ki2))
+            executeCommand("kubeconfig %d" % kubeconfigIndex)
 
 @kb.add('escape','0')
 def _(event):
     executeCommand("windows")
-
 #key shortcuts to all windows alt-1 - alt-xx
 for index, windowName in enumerate(globals.WINDOW_LIST, start=1):
 
