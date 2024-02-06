@@ -1,3 +1,10 @@
+== 0.31
+
+- Removed change kubeconfig keyboard shortcuts. Use 'kubeconfig <NR>' command.
+- Added change context to context-command.
+- Bug fixes.
+- Removed Dockerfile and scripts.
+
 == 0.30
 
 - Find kubeconfig-files at the start of the program.

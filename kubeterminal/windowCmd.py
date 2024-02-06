@@ -59,6 +59,10 @@ def getPods(namespace, nodes):
     title="%d Pods (ns: %s, nodes: %s)" % (podCount, namespace, nodes)
     return (contentList, title)
 
+def getContextsList():
+    contentList=getContexts()
+    return contentList
+
 def getContextList():
     contentList=getContexts()
     podCount = len(contentList)

@@ -21,12 +21,12 @@ def getKubectlCommand():
     return cmd
 
 #execute commands
-def executeCmd(cmd):
+def executeCmd(cmd,timeout=30):
 
     #TODO: if output is very long, this will hang until it is done
     output = ""
     try:
-        output = check_output(cmd,shell=True,stderr=subprocess.STDOUT,timeout=30)
+        output = check_output(cmd,shell=True,stderr=subprocess.STDOUT,timeout=timeout)
         output = output.decode('utf-8')
     except subprocess.CalledProcessError as E:
         output = E.output.decode('utf-8')
@@ -211,7 +211,9 @@ def getPods(namespace,nodeNameList=[]):
 
 def getNamespaces():
     namespaces=[]
-    output = executeCmd(getKubectlCommand() + " get namespaces --no-headers")
+    #executeBackgroudCmd
+    #executeCmd
+    output = executeCmd(getKubectlCommand() + " get namespaces --no-headers",timeout=5)
     if output.find("namespaces is forbidden") > -1:
         #OpenShift does not allow normal users to list namespaces
         #OpenShift has resource project that can be used

@@ -2,11 +2,11 @@
 :imagesdir: images/
 :toc:
 
-KubeTerminal is helper tool for Kubernetes. The idea is provide a simple and quick tool to get the basics out of Kubernetes environment. 
+KubeTerminal is helper tool for Kubernetes and/or OpenShift. The idea is provide a simple and quick tool to get the basics out of Kubernetes environment. 
 
-KubeTerminal is complementing, not replacing, existing kubectl and shell.
+KubeTerminal is complementing, not replacing, existing kubectl/oc and shell.
 
-Features include (and more planned):
+Features include:
 
 * Uses the shell and kubectl-command.
 * List pods in namespace and/or node.
@@ -27,15 +27,14 @@ image::kubeterminal_05.png[KubeTerminal_05,800]
 == Installation and usage
 
 * Python 3.
-** Python 3.10.8 used for development.
+** Python 3.11.7 used for development.
 ** Windows or Linux. 
-*** http://cmder.net/[cmder console] used in Windows 10.
 * Clone/download this repo.
 * Install prereqs:
 ** `pip install -r requirements.txt`
-** Install and configure `kubectl`.
+** Install and configure `kubectl` or `oc`.
 ** Install `openssl` in order to view certificates.
-* Login to Kubernetes cluster before using KubeTerminal.
+* Login to Kubernetes/OpenShift cluster before using KubeTerminal.
 * Start KubeTerminal:
 **  `python kubeterminal.py`
 * Basic commands:
@@ -78,7 +77,7 @@ optional arguments:
 ==== Terminal commands
 
 ```
-=== 2023-05-04T14:53:50.140344 help ===
+=== 2024-02-02T12:28:38.462310 help ===
 KubeTerminal
 
 Helper tool for Kubernetes and OpenShift.
@@ -119,8 +118,7 @@ TAB           - change focus to another window.
 <alt-20>      - show nodes.
 <alt-21>      - show customresourcedefinitions.
 <alt-22>      - show namespaces.
-<alt-c>       - show current kubeconfig and a list of available kubeconfigs.
-<alt-c-NR>    - select kubeconfig using a number NR. Get number using <alt-c> or kubeconfig.
+<alt-c>       - show kubeconfig and context.
 <alt-shift-l> - show logs of currently selected pod.
 <alt-shift-r> - refresh namespace and node windows.
 <alt-d>       - show description of currently selected resource.
@@ -136,8 +134,8 @@ help                                  - this help.
 all                                   - show all resources in namespaces.
 clip                                  - copy Output-window contents to clipboard.
 cls                                   - clear Output-window.
-contexts                              - show current and available contexts.
-decode <data key> [cert]              - decode base64 encoded secret or configmap value, optionally decode certificate.
+context [<cxt_index>]                  - show current and available contexts or set current context.
+decode <data key> [cert}              - decode base64 encoded secret or configmap value, optionally decode certificate.
 delete [--force]                      - delete currently selected pod, optionally force delete.
 describe                              - describe currently selected resource.
 exec [-c <container_name>] <command>  - exec command in currently selected pod.
@@ -155,9 +153,6 @@ window [<window name> | list]         - Set resource type for window. 'window li
 workers [-d]                          - get worker node resource allocation. Use -d to describe all worker nodes.
 wrap                                  - toggle wrapping in Output-window.
 yaml                                  - get YAML of currently selected resource.
-
-
-
 ```
 
 == Executable binary
@@ -166,20 +161,6 @@ Executable binary is used to provide easy way to distribute KubeTerminal to serv
 https://www.pyinstaller.org[PyInstaller] can be to create the executable
 
 Binary is created on system where you want to use the binary. For Windows binary, create the binary in Windows, for Linux, create the binary in Linux, and so on.
-
-=== Docker
-
-DockerHub has image _kazhar/kubeterminal_ and it includes Linux executable:
-
-Use following commands to copy the executable to local machine:
-
-----
-docker create -it --name kubeterminal kazhar/kubeterminal bash
-docker cp kubeterminal:/kubeterminal kubeterminal.bin
-docker rm -fv kubeterminal
-----
-
-Or use script: `get_latest_linux_binary.sh`
 
 === Create binary
 
@@ -192,15 +173,6 @@ Use the following commands create binary in the platform you are using:
 * Binary file is located:
 ** `dist/kubeterminal`
 ** if building on Windows, file has _.exe_ suffix.
-
-Or, to create Linux executable using Docker:
-
-* Execute script:
-** `create_linux_exe.sh`
-* The executable is copied current directory.
-* Executable name:
-** `kubeterminal.bin`
-
 
 == Screenshots
 

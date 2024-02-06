@@ -2,8 +2,9 @@ import datetime
 import base64
 import re
 import argparse 
-import os
+import os, sys
 import pathlib
+import csv
 
 from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
@@ -66,18 +67,17 @@ for root,d_names,f_names in os.walk(path):
             kubeconfigFiles.append(os.path.join(root, f))
 
 if args.kubeconfig:
-#    kubeconfigFiles = []
     for kubeconfigArgs in args.kubeconfig:
         for kubeconfigFile in kubeconfigArgs:
             if not kubeconfigFile in kubeconfigFiles:
                 kubeconfigFiles.append(kubeconfigFile)
 os.environ["KUBECONFIG_FILES"] = " ".join(kubeconfigFiles)
 
-if args.current_kubeconfig:
-    os.environ["CURRENT_KUBECONFIG_FILE"] = "%s" % args.current_kubeconfig
-else:
-    os.environ["CURRENT_KUBECONFIG_FILE"] = "%s" % kubeconfigFiles[0]
-
+try:
+    if args.current_kubeconfig:
+        os.environ["CURRENT_KUBECONFIG_FILE"] = "%s" % args.current_kubeconfig
+except:
+    pass
 
 helpText = """KubeTerminal
 
@@ -119,8 +119,7 @@ TAB           - change focus to another window.
 <alt-20>      - show nodes.
 <alt-21>      - show customresourcedefinitions.
 <alt-22>      - show namespaces.
-<alt-c>       - show current kubeconfig and a list of available kubeconfigs.
-<alt-c-NR>    - select kubeconfig using a number NR. Get number using <alt-c> or kubeconfig.
+<alt-c>       - show kubeconfig and context.
 <alt-shift-l> - show logs of currently selected pod.
 <alt-shift-r> - refresh namespace and node windows.
 <alt-d>       - show description of currently selected resource.
@@ -136,7 +135,7 @@ help                                  - this help.
 all                                   - show all resources in namespaces.
 clip                                  - copy Output-window contents to clipboard.
 cls                                   - clear Output-window.
-contexts                              - show current and available contexts.
+context [<cxt_index>]                  - show current and available contexts or set current context.
 decode <data key> [cert}              - decode base64 encoded secret or configmap value, optionally decode certificate.
 delete [--force]                      - delete currently selected pod, optionally force delete.
 describe                              - describe currently selected resource.
@@ -206,7 +205,6 @@ if args.even_more_compact_windows == True:
     isCompactWindows=True
 if permissions.isForbiddenNodes() == True and isCompactWindows==False:
     namespaceWindowSize=80
-
 
 enableMouseSupport = False
 enableScrollbar = False
@@ -321,13 +319,12 @@ def logspod_(event):
 @kb.add('escape','r')
 def refreshpods_(event):
     #refresh pod window
-    updateState()
-    updateUI("namespacepods")
+    refreshWindows(refreshPodWindowOnly = True)
 
 @kb.add('escape','R')
 def refreshnsnodes_(event):
     #refresh namespace/node windows
-    cliApplication.refreshNamespaceAndNodeWindows()
+    refreshWindows()
 
 @kb.add('escape','g')
 def toendofoutputbuffer_(event):    
@@ -372,27 +369,7 @@ def changeWindow(windowName):
 @kb.add('escape','c')
 def _(event):
     executeCommand("kubeconfig")
-#key shortcuts to kubeconfigs
-for index, windowName in enumerate(kubeconfigFiles, start=1):
-    if index < 10:
-      #Alt-c - 1 - 9
-      @kb.add('escape','c','escape',str(index))
-      def _(event):
-        keySequence = event.key_sequence
-        if len(keySequence) == 4:
-            kubeconfigIndex = int(keySequence[3].key)
-            executeCommand("kubeconfig %d" % kubeconfigIndex)
-    else:
-      #Alt-c - 10 - 99
-      numbers = str(index)
-      @kb.add('escape','c','escape',numbers[0],'escape',numbers[1])
-      def _(event):
-        keySequence = event.key_sequence
-        if len(keySequence) == 6:
-            ki1 = int(keySequence[3].key) 
-            ki2 = int(keySequence[5].key) 
-            kubeconfigIndex = int("%d%d" % (ki1, ki2))
-            executeCommand("kubeconfig %d" % kubeconfigIndex)
+    executeCommand("context")
 
 @kb.add('escape','0')
 def _(event):
@@ -560,6 +537,13 @@ def commandHander(buffer):
     cmdString = buffer.text
     executeCommand(cmdString)
 
+def refreshWindows(refreshPodWindowOnly = False):
+    if refreshPodWindowOnly == False:
+        cliApplication.refreshNamespaceAndNodeWindows()
+    updateState()
+    updateUI("namespacepods")
+
+
 #actual command handler, can be called from other sources as well
 def executeCommand(cmdString):
     import os#os imported also here because import at the beginning is not in this scope...
@@ -684,12 +668,12 @@ def executeCommand(cmdString):
     #but add kubeconfig
     if originalCmdString.find("ku ") == 0:
         #kubectl        
-        cmdString = originalCmdString.replace("ku","shell kubectl")
+        cmdString = originalCmdString.replace("ku ","shell kubectl ")
         cmdString = "%s %s " % (cmdString, cmd.getKubeConfigFile())
 
     if originalCmdString.find("oc ") == 0:
         #oc
-        cmdString = originalCmdString.replace("oc","shell oc")
+        cmdString = originalCmdString.replace("oc ","shell oc ")
         cmdString = "%s %s " % (cmdString, cmd.getKubeConfigFile())
 
     if cmdString.find("all") == 0:
@@ -785,19 +769,6 @@ def executeCommand(cmdString):
         pyperclip.copy(outputArea.text)
         text="Output window contents copied to clipboard."
 
-    if cmdString.find("use-context") == 0:
-        if applicationState.content_mode == globals.WINDOW_CONTEXT:
-            selectedContext = applicationState.selected_pod
-            cmdString = "use-context %s" % (selectedContext)
-            text="TODO: change context to %s" % (selectedContext)
-            #text = "\n".join(namespaceWindow.values)
-            #change values like this
-            #namespaceWindow.values = [("jee","jee")]
-            #update namespaces and nodes
-            pass
-        else:
-            text = "ERROR: use-context is only available for contexts."
-
     if cmdString.find("win") == 0:
         #window command to select content for "pod"-window
         cmdArgs = cmdString.split()
@@ -828,13 +799,28 @@ def executeCommand(cmdString):
                 text="%swindow %s (Alt-%d)\n" % (text,resourceType.lower().replace("window_",""),idx+1)
 
     if cmdString.find("context") == 0:
-      #context command to show contexts
-      #cmdArgs = cmdString.split()
-      (text,title) = windowCmd.getContextList()
-      text = "Available contexts:\n%s" % text
-      currentContext = cmd.getCurrentContext()
-      text = "Current context:\n%s\n\n%s" % (currentContext, text)
-
+        cmdArgs = cmdString.split()
+        if len(cmdArgs) == 1:
+            #context command to show contexts
+            contextList = windowCmd.getContextsList()
+            (text,title) = windowCmd.getContextList()
+            text = "Available contexts:\n%s" % text
+            currentContext = cmd.getCurrentContext()
+            text = "Current context:\n%s\n\nAvailable contexts:\n" % (currentContext)
+            i = 0
+            for context in contextList:
+                text = "%s%d: %s\n" % (text,i,context)
+                i = i + 1
+            text = "%s\n\nUse 'context <NR>' command to change context." % (text)
+        else:
+            selectedContext=int(cmdString.split()[1]) 
+            contextList = windowCmd.getContextsList()
+            selectedContext = contextList[selectedContext] 
+            cmdString = "kubectl config use-context %s" % (selectedContext)
+            #cmd.ExecuteCommandBackground(cmdString, publishOutput = True,decodeBase64 = doBase64decode, decodeCert = decodeCert)
+            cmd.executeCmd(cmdString)
+            refreshWindows()
+            
     if cmdString.find("kubeconfig") == 0:
         cmdArgs = cmdString.split()
         if len(cmdArgs) > 1:
@@ -847,7 +833,7 @@ def executeCommand(cmdString):
                         del os.environ["CURRENT_KUBECONFIG_FILE"]                        
                 else:
                     os.environ["CURRENT_KUBECONFIG_FILE"] = os.environ["KUBECONFIG_FILES"].split()[index-1]
-                cliApplication.refreshWindows()
+                refreshWindows()
             else:
                 text = "%sNo kubeconfigs available." % (text)
         else:
@@ -868,13 +854,20 @@ def executeCommand(cmdString):
                     index = index + 1
             else:
                 text = "%sNo kubeconfigs available." % (text)
+            text = "%s\n\nUse 'kubeconfig <NR>' command to change kubeconfig." % (text)
 
-    #generic test command
+    if cmdString.find("login") == 0:
+        text = "TODO: login command"
+
+    #generic test commande
     if cmdString.find("testcmd") == 0:
         #text = cliApplication.refreshWindows()
         text="test command used during development"
         pub.sendMessage('working',arg="started")
 
+    #refresh windows
+    if cmdString.find("refresh") == 0:
+        refreshWindows()
 
     if text != "":
         appendToOutput(text,cmdString=cmdString)
@@ -1046,13 +1039,6 @@ class MyApplication(Application):
         setLayoutContainers()
         # Update to use a new layout
         self.layout = layout
-
-    def refreshWindows(self):
-        self.refreshNamespaceAndNodeWindows()
-
-        #refresh pod window
-        updateState()
-        updateUI("namespacepods")
 
 #set window containers
 setLayoutContainers()
