@@ -133,9 +133,9 @@ Commands:
 
 help                                  - this help.
 all                                   - show all resources in namespaces.
-clip                                  - copy Output-window contents to clipboard.
 cls                                   - clear Output-window.
-context [<cxt_index>]                  - show current and available contexts or set current context.
+copy                                  - copy Output-window contents to clipboard.
+context [<cxt_index>]                 - show current and available contexts or set current context.
 decode <data key> [cert}              - decode base64 encoded secret or configmap value, optionally decode certificate.
 delete [--force]                      - delete currently selected pod, optionally force delete.
 describe                              - describe currently selected resource.
@@ -763,7 +763,7 @@ def executeCommand(cmdString):
         
         text=nodeStats
 
-    if cmdString.find("clip") == 0:
+    if cmdString.find("copy") == 0:
         #copy output window contents to clipboard
         import pyperclip
         pyperclip.copy(outputArea.text)
