@@ -1,3 +1,8 @@
+== 0.32
+
+- Removed node version from Nodes-window. Use 'window node' to list nodes including version.
+- Renamed clip to copy.
+
 == 0.31
 
 - Removed change kubeconfig keyboard shortcuts. Use 'kubeconfig <NR>' command.

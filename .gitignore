@@ -1,4 +1,5 @@
 icp_login.*
+oc-login.*
 kubeterminal.bin
 tmp/
 todo.md
@@ -8,6 +9,8 @@ kubeterminal_output_*
 oc_login*
 local/
 output-file.txt
+oc-login.cfg
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

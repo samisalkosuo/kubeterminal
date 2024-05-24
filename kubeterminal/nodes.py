@@ -102,7 +102,8 @@ def list():
             readyString=nodeFields[1]
             if readyString == "Ready":
                 nodesReady=nodesReady+1
-            value="%s %s %s %s" % (nodeFields[0],readyString,nodeFields[2],nodeFields[4])
+            #value="%s %s %s %s" % (nodeFields[0],readyString,nodeFields[2],nodeFields[4])
+            value="%s %s %s" % (nodeFields[0],readyString,nodeFields[2])
             nodes.append((nodeFields[0],value))
 
     nodes.insert(0,("workers","all worker nodes"))
