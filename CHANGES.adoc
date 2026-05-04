@@ -1,7 +1,15 @@
+== 0.33
+
+- Added create event loop.
+- Removed searching of kubeconfig files in drive.
+- Added log_scale function.
+
+
 == 0.32
 
 - Removed node version from Nodes-window. Use 'window node' to list nodes including version.
 - Renamed clip to copy.
+- Added alt-C shortcut to clear Output-window.
 
 == 0.31
 
