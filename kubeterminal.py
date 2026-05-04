@@ -5,6 +5,7 @@ import argparse
 import os, sys
 import pathlib
 import csv
+import asyncio
 
 from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
@@ -58,13 +59,40 @@ if args.oc == True:
     os.environ["KUBETERMINAL_CMD"] = "oc"
 
 kubeconfigFiles = []
+
+# def get_home_directory():
+#     """
+#     Returns the user's home directory in a cross-platform way.
+#     Falls back to os.path.expanduser if environment variables are missing.
+#     """
+#     try:
+#         # Try environment variables first
+#         home = os.getenv('HOME') or os.getenv('USERPROFILE')
+        
+#         # On Windows, HOME may not be set, so combine HOMEDRIVE + HOMEPATH
+#         if not home and os.getenv('HOMEDRIVE') and os.getenv('HOMEPATH'):
+#             home = os.path.join(os.getenv('HOMEDRIVE'), os.getenv('HOMEPATH'))
+        
+#         # Fallback: use expanduser
+#         if not home:
+#             home = os.path.expanduser("~")
+        
+#         return home
+#     except Exception as e:
+#         print(f"Error retrieving home directory: {e}", file=sys.stderr)
+#         return "."
+    
 #find all kubeconfig-files
 #assume all are named kubeconfig
 path = "/"
-for root,d_names,f_names in os.walk(path):
-    for f in f_names:
-        if f == "kubeconfig":
-            kubeconfigFiles.append(os.path.join(root, f))
+#path = os.environ["HOME"]
+# path = get_home_directory()
+# print(path)
+
+# for root,d_names,f_names in os.walk(path):
+#     for f in f_names:
+#         if f == "kubeconfig":
+#             kubeconfigFiles.append(os.path.join(root, f))
 
 if args.kubeconfig:
     for kubeconfigArgs in args.kubeconfig:
@@ -120,6 +148,7 @@ TAB           - change focus to another window.
 <alt-21>      - show customresourcedefinitions.
 <alt-22>      - show namespaces.
 <alt-c>       - show kubeconfig and context.
+<alt-C>       - clear Output-window.
 <alt-shift-l> - show logs of currently selected pod.
 <alt-shift-r> - refresh namespace and node windows.
 <alt-d>       - show description of currently selected resource.
@@ -370,6 +399,10 @@ def changeWindow(windowName):
 def _(event):
     executeCommand("kubeconfig")
     executeCommand("context")
+
+@kb.add('escape','C')
+def logspod_(event):
+    executeCommand("cls")
 
 @kb.add('escape','0')
 def _(event):
@@ -1062,5 +1095,20 @@ cliApplication = MyApplication(layout=layout,
                 mouse_support=enableMouseSupport,
                 before_render=before_render
                 )
+
+
+def get_or_create_eventloop():
+    try:
+        return asyncio.get_event_loop()
+    except RuntimeError as ex:
+        if "There is no current event loop in thread" in str(ex):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            return asyncio.get_event_loop()
+        else:
+          raise ex
+
+loop = get_or_create_eventloop()
+asyncio.set_event_loop(loop)
 
 cliApplication.run()

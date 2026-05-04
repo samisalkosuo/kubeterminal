@@ -2,7 +2,8 @@
 from .cmd import getNamespaces,getPods
 from .cmd import getPodLabels,getTop
 from .nodes import getWorkerNodeNames
-
+from io import StringIO  
+from .utils import log_scale
 
 def labels(podName,namespaceName):
     labelOutput = getPodLabels(podName,namespaceName)
@@ -11,8 +12,28 @@ def labels(podName,namespaceName):
     labelOutput = "\n".join(labelOutput)
     return labelOutput
 
+#from https://medium.com/@SrvZ/how-to-create-stunning-graphs-in-the-terminal-with-python-2adf9d012131
+def drawBar(value, legend=None, maxLegendLength=0, char="❚"):
+    strFile = StringIO("") 
+    if maxLegendLength > 0 and legend != None:
+        legendSize = len(legend)
+        trimSize = maxLegendLength - legendSize + 1
+        legend = f"{legend}{trimSize * ' '}"
+    if legend:
+        print(legend, "", char * value,  end='', file=strFile, flush=True)
+        #print(legend, "\t", char * value)
+    else:
+        print(char * value,  end='', file=strFile, flush=True)
+        #print(char * value)
+    strValue = strFile.getvalue()
+    strFile.close()
+    return strValue
+
+
 def top(podName,namespaceName,cmdString,isAllNamespaces=False,doAsciiGraph=False):
     output = getTop(podName,namespaceName,cmdString,isAllNamespaces)
+    if output.find("Error from server") > -1:
+        return output
     topOutput = output
     if doAsciiGraph == True:
         from ascii_graph import Pyasciigraph
@@ -51,23 +72,50 @@ def top(podName,namespaceName,cmdString,isAllNamespaces=False,doAsciiGraph=False
                 cpuUse=(rowTitle, int(fields[2].replace("m","")))
                 memUse=(rowTitle, int(fields[3].replace("Mi","")))
             else:
-                cpuUse=(fields[0], int(fields[1].replace("m","")))
-                memUse=(fields[0], int(fields[2].replace("Mi","")))
+                #cpuUse=(fields[0], int(fields[1].replace("m","")))
+                cpuUse=(fields[0], int(log_scale([int(fields[1].replace("m",""))])[0]))
+                #memUse=(fields[0], int(fields[2].replace("Mi","")))
+                memUse=(fields[0], int(log_scale([int(fields[2].replace("Mi",""))])[0]))
             cpuUsage.append(cpuUse)
+            
+            
             memoryUsage.append(memUse)
 
         cpuTitle='CPU (millicores)'
         if podName != None:
             cpuTitle="%s - %s" % (cpuTitle,podName)
-        for line in  graph.graph(cpuTitle, cpuUsage):
-            output = output + line + "\n"
+        output = f"{cpuTitle}\n"
+        
+        podNames = []
+        for usage in cpuUsage:
+            podNames.append(usage[0])
+        res = max(podNames, key = len)
+        maxLength = len(res)        
+        for usage in cpuUsage:
+            podName = usage[0]
+            if podName == "POD":
+                continue
+            currentCPUUsage = usage[1]
+            
+            output = f"{output}{drawBar(currentCPUUsage,legend=podName,maxLegendLength=maxLength)}\n"
+            #output = f"{output} {podName}: {currentCPUUsage}\n"
+        #for line in  graph.graph(cpuTitle, cpuUsage):
+        #    output = output + line + "\n"
 
         memTitle='Memory (Mi bytes)'
         if podName != None:
             memTitle="%s - %s" % (memTitle,podName)
-        output= output + "\n"
-        for line in  graph.graph(memTitle, memoryUsage):
-           output = output + line + "\n"
+        output = f"{output}\n\n{memTitle}\n"
+        for usage in memoryUsage:
+            podName = usage[0]
+            if podName == "POD":
+                continue
+            currentMemoryUsage = usage[1]
+            
+            output = f"{output}{drawBar(currentMemoryUsage,legend=podName,maxLegendLength=maxLength)}\n"
+        
+        #for line in  graph.graph(memTitle, memoryUsage):
+        #   output = output + line + "\n"
 
         if cmdString.find("-n") > -1:
             #add percents for nodes
